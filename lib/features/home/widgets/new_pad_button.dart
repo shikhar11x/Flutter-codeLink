@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
 
 class NewPadButton extends StatelessWidget {
   final VoidCallback onTap;

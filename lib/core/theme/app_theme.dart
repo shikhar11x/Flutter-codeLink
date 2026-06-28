@@ -9,8 +9,8 @@ class AppTheme {
     brightness: Brightness.dark,
     scaffoldBackgroundColor: AppColors.bg,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.green,
-      secondary: AppColors.purple,
+      primary: AppColors.white,
+      secondary: AppColors.green,
       surface: AppColors.surface,
     ),
     appBarTheme: const AppBarTheme(
@@ -25,7 +25,6 @@ class AppTheme {
     ),
   );
 
-  // Reusable text styles
   static const heading1 = TextStyle(
     color: AppColors.textPrimary,
     fontSize: 28,

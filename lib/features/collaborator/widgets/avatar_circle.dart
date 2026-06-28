@@ -6,11 +6,7 @@ class AvatarCircle extends StatelessWidget {
   final Collaborator collaborator;
   final double size;
 
-  const AvatarCircle({
-    super.key,
-    required this.collaborator,
-    this.size = 32,
-  });
+  const AvatarCircle({super.key, required this.collaborator, this.size = 32});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +21,7 @@ class AvatarCircle extends StatelessWidget {
           border: Border.all(color: AppColors.surface, width: 2),
           boxShadow: [
             BoxShadow(
-              color: collaborator.color.withOpacity(0.3),
+              color: collaborator.color.withValues(alpha: 0.3),
               blurRadius: 6,
               spreadRadius: 0,
             ),

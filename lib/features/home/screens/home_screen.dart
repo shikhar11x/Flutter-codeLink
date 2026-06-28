@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: AppColors.bg,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -30,12 +30,13 @@ class HomeScreen extends StatelessWidget {
               const HomeLogo(),
               const Spacer(flex: 2),
 
+              // New Pad
               NewPadButton(
                 onTap: () => _openEditor(context, SlugGenerator.generate()),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-              // Open existing pad
+              // Open Existing Pad
               GestureDetector(
                 onTap: () async {
                   final slug = await OpenPadDialog.show(context);
@@ -49,13 +50,19 @@ class HomeScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(
+                      color: AppColors.white.withValues(alpha: 0.08),
+                    ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.folder_open_rounded, color: AppColors.textSecondary, size: 18),
-                      SizedBox(width: 8),
+                      Icon(
+                        Icons.folder_open_rounded,
+                        color: AppColors.textSecondary,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
                       Text(
                         'Open Existing Pad',
                         style: TextStyle(
@@ -71,7 +78,6 @@ class HomeScreen extends StatelessWidget {
 
               const Spacer(),
 
-              // Footer
               Text(
                 'No account needed — just share the link',
                 style: TextStyle(color: AppColors.textMuted, fontSize: 12),

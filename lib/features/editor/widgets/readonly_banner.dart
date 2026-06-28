@@ -9,7 +9,7 @@ class ReadOnlyBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 7),
-      color: AppColors.blue.withOpacity(0.1),
+      color: AppColors.blue.withValues(alpha: 0.1),
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

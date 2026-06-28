@@ -31,7 +31,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
       value: value,
       onChanged: onChanged,
       activeColor: AppColors.green,
-      activeTrackColor: AppColors.green.withOpacity(0.2),
+      activeTrackColor: AppColors.green.withValues(alpha: 0.2),
       inactiveThumbColor: AppColors.textMuted,
       inactiveTrackColor: AppColors.border,
     );
@@ -41,15 +41,24 @@ class _SettingsSheetState extends State<SettingsSheet> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _SmallBtn(icon: Icons.remove, onTap: () {
-          if (_fontSize > 10) setState(() => _fontSize--);
-        }),
+        _SmallBtn(
+          icon: Icons.remove,
+          onTap: () {
+            if (_fontSize > 10) setState(() => _fontSize--);
+          },
+        ),
         const SizedBox(width: 10),
-        Text('$_fontSize', style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+        Text(
+          '$_fontSize',
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        ),
         const SizedBox(width: 10),
-        _SmallBtn(icon: Icons.add, onTap: () {
-          if (_fontSize < 24) setState(() => _fontSize++);
-        }),
+        _SmallBtn(
+          icon: Icons.add,
+          onTap: () {
+            if (_fontSize < 24) setState(() => _fontSize++);
+          },
+        ),
       ],
     );
   }
@@ -89,7 +98,10 @@ class _SettingsSheetState extends State<SettingsSheet> {
 
           // Access control — owner only
           if (widget.currentRole == UserRole.owner) ...[
-            Text('ACCESS CONTROL', style: AppTheme.label.copyWith(color: AppColors.textMuted)),
+            Text(
+              'ACCESS CONTROL',
+              style: AppTheme.label.copyWith(color: AppColors.textMuted),
+            ),
             const SizedBox(height: 10),
             SettingsTile(
               icon: Icons.people_outline_rounded,
@@ -103,21 +115,30 @@ class _SettingsSheetState extends State<SettingsSheet> {
             const SizedBox(height: 20),
           ],
 
-          Text('EDITOR', style: AppTheme.label.copyWith(color: AppColors.textMuted)),
+          Text(
+            'EDITOR',
+            style: AppTheme.label.copyWith(color: AppColors.textMuted),
+          ),
           const SizedBox(height: 10),
 
           SettingsTile(
             icon: Icons.format_list_numbered_rounded,
             title: 'Line numbers',
             subtitle: 'Show line numbers in editor',
-            trailing: _buildSwitch(_showLineNumbers, (val) => setState(() => _showLineNumbers = val)),
+            trailing: _buildSwitch(
+              _showLineNumbers,
+              (val) => setState(() => _showLineNumbers = val),
+            ),
           ),
           const SizedBox(height: 8),
           SettingsTile(
             icon: Icons.wrap_text_rounded,
             title: 'Word wrap',
             subtitle: 'Wrap long lines automatically',
-            trailing: _buildSwitch(_wordWrap, (val) => setState(() => _wordWrap = val)),
+            trailing: _buildSwitch(
+              _wordWrap,
+              (val) => setState(() => _wordWrap = val),
+            ),
           ),
           const SizedBox(height: 8),
           SettingsTile(
@@ -129,7 +150,10 @@ class _SettingsSheetState extends State<SettingsSheet> {
 
           if (widget.currentRole == UserRole.owner) ...[
             const SizedBox(height: 20),
-            Text('DANGER ZONE', style: AppTheme.label.copyWith(color: Colors.red[400])),
+            Text(
+              'DANGER ZONE',
+              style: AppTheme.label.copyWith(color: Colors.red[400]),
+            ),
             const SizedBox(height: 10),
             SettingsTile(
               icon: Icons.delete_outline_rounded,
@@ -139,13 +163,25 @@ class _SettingsSheetState extends State<SettingsSheet> {
               trailing: GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  child: Text('Delete', style: TextStyle(color: Colors.red[400], fontSize: 12, fontWeight: FontWeight.w600)),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Text(
+                    'Delete',
+                    style: TextStyle(
+                      color: Colors.red[400],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ),

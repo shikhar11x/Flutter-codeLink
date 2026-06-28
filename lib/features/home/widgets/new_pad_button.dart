@@ -14,27 +14,35 @@ class NewPadButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          gradient: AppColors.gradientGreen,
+          color: const Color(0xFFEBEBEB),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: AppColors.green.withOpacity(0.35),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
+              color: Colors.white.withValues(alpha: 0.15),
+              blurRadius: 24,
+              spreadRadius: 0,
+              offset: const Offset(0, 0),
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.06),
+              blurRadius: 48,
+              spreadRadius: 4,
+              offset: const Offset(0, 0),
             ),
           ],
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_rounded, color: Colors.black, size: 20),
+            Icon(Icons.add_rounded, color: Colors.black, size: 18),
             SizedBox(width: 8),
             Text(
               'New Pad',
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.1,
               ),
             ),
           ],

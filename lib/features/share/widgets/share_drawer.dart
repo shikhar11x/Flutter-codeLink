@@ -19,7 +19,10 @@ class ShareDrawer extends StatelessWidget {
           children: [
             Icon(Icons.check_circle_rounded, color: AppColors.green, size: 16),
             SizedBox(width: 8),
-            Text('Link copied!', style: TextStyle(color: AppColors.textPrimary)),
+            Text(
+              'Link copied!',
+              style: TextStyle(color: AppColors.textPrimary),
+            ),
           ],
         ),
         backgroundColor: AppColors.card,
@@ -41,7 +44,7 @@ class ShareDrawer extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle
+          // Handle bar
           Container(
             width: 36,
             height: 4,
@@ -65,13 +68,17 @@ class ShareDrawer extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.green.withOpacity(0.15),
+                  color: AppColors.white.withValues(alpha: 0.08),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
               ],
             ),
-            child: QrImageView(data: _link, version: QrVersions.auto, size: 160),
+            child: QrImageView(
+              data: _link,
+              version: QrVersions.auto,
+              size: 160,
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -85,7 +92,11 @@ class ShareDrawer extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.link_rounded, color: AppColors.green, size: 16),
+                Icon(
+                  Icons.link_rounded,
+                  color: AppColors.textSecondary,
+                  size: 16,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -106,11 +117,11 @@ class ShareDrawer extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                gradient: AppColors.gradientGreen,
+                color: AppColors.whiteDim,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.green.withOpacity(0.3),
+                    color: AppColors.white.withValues(alpha: 0.1),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -137,7 +148,10 @@ class ShareDrawer extends StatelessWidget {
 
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text(
+              'Close',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
           ),
           SizedBox(height: MediaQuery.of(context).padding.bottom),
         ],

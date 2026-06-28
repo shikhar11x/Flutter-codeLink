@@ -9,34 +9,31 @@ class HomeLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Glowing icon
         Container(
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-            gradient: AppColors.gradientGreen,
+            color: AppColors.card,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border, width: 1),
             boxShadow: [
               BoxShadow(
-                color: AppColors.green.withOpacity(0.4),
+                color: AppColors.white.withValues(alpha: 0.06),
                 blurRadius: 24,
                 spreadRadius: 2,
               ),
             ],
           ),
-          child: const Icon(Icons.code_rounded, color: Colors.black, size: 36),
+          child: const Icon(
+            Icons.code_rounded,
+            color: AppColors.white,
+            size: 32,
+          ),
         ),
         const SizedBox(height: 20),
-        ShaderMask(
-          shaderCallback: (bounds) =>
-              AppColors.gradientGreen.createShader(bounds),
-          child: const Text('CodeLink', style: AppTheme.heading1),
-        ),
+        const Text('CodeLink', style: AppTheme.heading1),
         const SizedBox(height: 8),
-        const Text(
-          'Real-time collaborative code editor',
-          style: AppTheme.body,
-        ),
+        const Text('Real-time collaborative code editor', style: AppTheme.body),
       ],
     );
   }

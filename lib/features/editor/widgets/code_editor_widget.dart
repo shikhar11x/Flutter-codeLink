@@ -18,25 +18,39 @@ class CodeEditorWidget extends StatelessWidget {
     return CodeTheme(
       data: CodeThemeData(styles: atomOneDarkTheme),
       child: SingleChildScrollView(
-        child: CodeField(
-          controller: controller,
-          readOnly: readOnly,
-          textStyle: const TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 14,
-            height: 1.6,
-          ),
-          lineNumberStyle: const LineNumberStyle(
-            width: 48,
-            margin: 8,
-            textStyle: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 13,
+        child: Stack(
+          children: [
+            // ── Original CodeField — bilkul same as before ──
+            CodeField(
+              controller: controller,
+              readOnly: readOnly,
+              textStyle: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 14,
+                height: 1.6,
+              ),
+              gutterStyle: const GutterStyle(
+                width: 48,
+                margin: 8,
+                textStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                background: AppColors.surface,
+                textAlign: TextAlign.center,
+              ),
+              background: AppColors.bg,
+              minLines: 30,
             ),
-            background: AppColors.surface,
-          ),
-          background: AppColors.bg,
-          minLines: 30,
+
+            // ── Sirf yeh naya add kiya — separator line ──
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: 42,
+              child: Container(
+                width: 1,
+                color: AppColors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ],
         ),
       ),
     );

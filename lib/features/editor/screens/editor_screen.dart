@@ -19,6 +19,7 @@ import '../../settings/widgets/settings_sheet.dart';
 import '../widgets/language_bar.dart';
 import '../widgets/code_editor_widget.dart';
 import '../widgets/readonly_banner.dart';
+import '../widgets/pad_title.dart';
 
 class EditorScreen extends StatefulWidget {
   final String padSlug;
@@ -37,6 +38,7 @@ class _EditorScreenState extends State<EditorScreen> {
   bool _isConnected = false;
   String _output = '';
   bool _isRunning = false;
+  String _padTitle = '';
   late CodeController _codeController;
   DateTime? _lastEmit;
 
@@ -47,6 +49,7 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void initState() {
     super.initState();
+    _padTitle = widget.padSlug;
     _codeController = CodeController(text: '', language: java);
     _initPad();
   }
@@ -225,13 +228,11 @@ class _EditorScreenState extends State<EditorScreen> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                'codelink.app/${widget.padSlug}',
-                style: AppTheme.body.copyWith(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
-                overflow: TextOverflow.ellipsis,
+              child: PadTitle(
+                padSlug: widget.padSlug,
+                onTitleChanged: (title) {
+                  setState(() => _padTitle = title);
+                },
               ),
             ),
             Container(

@@ -9,7 +9,7 @@ class ShareDrawer extends StatelessWidget {
 
   const ShareDrawer({super.key, required this.padSlug});
 
-  String get _link => 'codelink.app/$padSlug';
+String get _link => 'codelink-11x.vercel.app/$padSlug';
 
   void _copyLink(BuildContext context) {
     Clipboard.setData(ClipboardData(text: _link));

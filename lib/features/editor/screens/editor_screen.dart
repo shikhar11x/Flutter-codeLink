@@ -7,6 +7,9 @@ import 'package:highlight/languages/java.dart';
 import 'package:highlight/languages/dart.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/network/socket_service.dart';
+import '../../../core/services/pad_service.dart';
+import '../../../core/services/execution_service.dart';
 import '../../collaborator/models/collaborator_model.dart';
 import '../../collaborator/widgets/avatar_group.dart';
 import '../../collaborator/widgets/collab_panel.dart';
@@ -30,42 +33,139 @@ class _EditorScreenState extends State<EditorScreen> {
   String _selectedLanguage = 'Java';
   UserRole _currentRole = UserRole.owner;
   bool _isReadOnly = false;
+  bool _isLoading = true;
+  bool _isConnected = false;
   String _output = '';
   bool _isRunning = false;
   late CodeController _codeController;
+  DateTime? _lastEmit;
 
-  final List<Collaborator> _collaborators = [
-    Collaborator(id: '1', name: 'You', color: Color(0xFFD0D8FF)),
-    Collaborator(id: '2', name: 'Alice', color: Color(0xFFFFD0E0)),
-    Collaborator(id: '3', name: 'Raj', color: Color(0xFFC8F7DC)),
+  List<Collaborator> _collaborators = [
+    Collaborator(id: '1', name: 'You', color: const Color(0xFFD0D8FF)),
   ];
 
   @override
   void initState() {
     super.initState();
     _codeController = CodeController(text: '', language: java);
+    _initPad();
   }
 
-  @override
-  void dispose() {
-    _codeController.dispose();
-    super.dispose();
+  Future<void> _initPad() async {
+    var pad = await PadService.getPad(widget.padSlug);
+    pad ??= await PadService.createPad(slug: widget.padSlug);
+
+    if (pad != null && mounted) {
+      setState(() {
+        _codeController = CodeController(
+          text: pad!['content'] ?? '',
+          language: java,
+        );
+        _isLoading = false;
+      });
+    } else {
+      if (mounted) setState(() => _isLoading = false);
+    }
+
+    _connectSocket();
   }
 
-  void _changeLanguage(String lang) {
+  void _connectSocket() {
+    SocketService.connect();
+    SocketService.joinPad(widget.padSlug, 'You', '#D0D8FF');
+
+    SocketService.onPadInit((data) {
+      if (mounted) {
+        setState(() {
+          _codeController = CodeController(
+            text: data['content'] ?? '',
+            language: java,
+          );
+        });
+      }
+    });
+
+    SocketService.onCodeUpdate((content) {
+      if (mounted && content != _codeController.text) {
+        final selection = _codeController.selection;
+        _codeController.text = content;
+        _codeController.selection = selection;
+      }
+    });
+
+    SocketService.onUsersUpdate((users) {
+      if (mounted) {
+        setState(() {
+          _isConnected = true;
+          _collaborators = users.map<Collaborator>((u) {
+            Color color = const Color(0xFFD0D8FF);
+            try {
+              final hex = (u['color'] as String)
+                  .replaceFirst('#', '')
+                  .padLeft(6, '0');
+              color = Color(int.parse('FF$hex', radix: 16));
+            } catch (_) {}
+            return Collaborator(
+              id: u['id'].toString(),
+              name: u['name'].toString(),
+              color: color,
+            );
+          }).toList();
+        });
+      }
+    });
+
+    SocketService.onLanguageUpdate((lang) {
+      if (mounted) _changeLanguage(lang, emit: false);
+    });
+  }
+
+  void _onCodeChanged(String content) {
+    final now = DateTime.now();
+    _lastEmit = now;
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (_lastEmit == now) {
+        SocketService.sendCodeChange(widget.padSlug, content);
+      }
+    });
+  }
+
+  void _changeLanguage(String lang, {bool emit = true}) {
     setState(() {
       _selectedLanguage = lang;
       _codeController = CodeController(
         text: _codeController.text,
         language: switch (lang) {
-          'Java' => java,
-          'Python' => python,
+          'Java'       => java,
+          'Python'     => python,
           'JavaScript' => javascript,
-          'C++' => cpp,
-          _ => dart,
+          'C++'        => cpp,
+          _            => dart,
         },
       );
     });
+    if (emit) SocketService.sendLanguageChange(widget.padSlug, lang);
+  }
+
+  Future<void> _runCode() async {
+    if (_isRunning) return;
+
+    setState(() {
+      _isRunning = true;
+      _output = '';
+    });
+
+    final result = await ExecutionService.execute(
+      language: _selectedLanguage,
+      code: _codeController.text,
+    );
+
+    if (mounted) {
+      setState(() {
+        _isRunning = false;
+        _output = result.output;
+      });
+    }
   }
 
   void _showShareDrawer() {
@@ -88,6 +188,13 @@ class _EditorScreenState extends State<EditorScreen> {
         onReadOnlyChanged: (val) => setState(() => _isReadOnly = val),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    SocketService.offAll();
+    _codeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -127,6 +234,26 @@ class _EditorScreenState extends State<EditorScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                color: _isConnected
+                    ? const Color(0xFF00FF94)
+                    : Colors.orange,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: (_isConnected
+                            ? const Color(0xFF00FF94)
+                            : Colors.orange)
+                        .withValues(alpha: 0.5),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
           ],
         ),
         actions: [
@@ -161,35 +288,57 @@ class _EditorScreenState extends State<EditorScreen> {
           Container(
             margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
             decoration: BoxDecoration(
-              color: AppColors.whiteDim,
+              color: _isRunning
+                  ? AppColors.surface
+                  : AppColors.whiteDim,
               borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.white.withValues(alpha: 0.12),
-                  blurRadius: 12,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: _isRunning
+                  ? Border.all(color: AppColors.border)
+                  : null,
+              boxShadow: _isRunning
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: AppColors.white.withValues(alpha: 0.12),
+                        blurRadius: 12,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(8),
-                onTap: () {},
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                onTap: _runCode,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.black,
-                        size: 16,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'Run',
-                        style: TextStyle(
+                      if (_isRunning)
+                        const SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            color: AppColors.textSecondary,
+                          ),
+                        )
+                      else
+                        const Icon(
+                          Icons.play_arrow_rounded,
                           color: Colors.black,
+                          size: 16,
+                        ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _isRunning ? 'Running' : 'Run',
+                        style: TextStyle(
+                          color: _isRunning
+                              ? AppColors.textSecondary
+                              : Colors.black,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -202,54 +351,53 @@ class _EditorScreenState extends State<EditorScreen> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // ── Main layout ──
-          Column(
-            children: [
-              if (_isReadOnly) const ReadOnlyBanner(),
-
-              // Editor + Collab panel
-              Expanded(
-                child: Row(
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF00FF94),
+                strokeWidth: 2,
+              ),
+            )
+          : Stack(
+              children: [
+                Column(
                   children: [
-                    // Code editor
+                    if (_isReadOnly) const ReadOnlyBanner(),
                     Expanded(
-                      child: CodeEditorWidget(
-                        controller: _codeController,
-                        readOnly: _isReadOnly,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CodeEditorWidget(
+                              controller: _codeController,
+                              readOnly: _isReadOnly,
+                              onChanged: _onCodeChanged,
+                            ),
+                          ),
+                          CollabPanel(
+                            collaborators: _collaborators,
+                            output: _output,
+                            isRunning: _isRunning,
+                            language: _selectedLanguage,
+                          ),
+                        ],
                       ),
                     ),
-                    // Right collab + output panel
-                    CollabPanel(
-                      collaborators: _collaborators,
-                      output: _output,
-                      isRunning: _isRunning,
-                      language: _selectedLanguage,
-                    ),
+                    const SizedBox(height: 64),
                   ],
                 ),
-              ),
-
-              // Bottom padding so editor content doesn't hide behind floating bar
-              const SizedBox(height: 64),
-            ],
-          ),
-
-          // ── Floating language bar — bottom center ──
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: LanguageBar(
-                selected: _selectedLanguage,
-                onChanged: _changeLanguage,
-              ),
+                Positioned(
+                  bottom: 20,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: LanguageBar(
+                      selected: _selectedLanguage,
+                      onChanged: _changeLanguage,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

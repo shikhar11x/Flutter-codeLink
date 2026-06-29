@@ -22,76 +22,111 @@ class CollabPanel extends StatefulWidget {
 }
 
 class _CollabPanelState extends State<CollabPanel> {
+  double _width = 180;
+  static const double _minWidth = 120;
+  static const double _maxWidth = 380;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 180,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          left: BorderSide(color: AppColors.white.withValues(alpha: 0.05)),
+    return Row(
+      children: [
+        // ── Drag handle ──
+        GestureDetector(
+          onHorizontalDragUpdate: (details) {
+            setState(() {
+              _width = (_width - details.delta.dx).clamp(_minWidth, _maxWidth);
+            });
+          },
+          child: MouseRegion(
+            cursor: SystemMouseCursors.resizeColumn,
+            child: SizedBox(
+              width: 8,
+              child: Center(
+                child: Container(
+                  width: 2,
+                  color: AppColors.white.withValues(alpha: 0.08),
+                ),
+              ),
+            ),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Live header
-          _SectionHeader(dot: true, dotActive: true, label: 'Live'),
 
-          // Collaborators
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
-            child: Text(
-              'COLLABORATORS',
-              style: AppTheme.label.copyWith(fontSize: 9, letterSpacing: 0.7),
+        // ── Panel ──
+        SizedBox(
+          width: _width,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border(
+                left: BorderSide(
+                  color: AppColors.white.withValues(alpha: 0.05),
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          ...widget.collaborators.map((c) => _CollabRow(collaborator: c)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SectionHeader(dot: true, dotActive: true, label: 'Live'),
 
-          // Divider
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Container(
-              height: 1,
-              color: AppColors.white.withValues(alpha: 0.04),
-            ),
-          ),
-
-          // Output header
-          _SectionHeader(
-            dot: true,
-            dotActive: widget.isRunning,
-            label: widget.isRunning ? 'Running...' : 'Output',
-          ),
-
-          // Output content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
-              child: widget.output.isEmpty
-                  ? Text(
-                      'Run your code\nto see output.',
-                      style: AppTheme.label.copyWith(
-                        fontSize: 10,
-                        height: 1.6,
-                        letterSpacing: 0,
-                      ),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _OutputLine(text: 'running...', muted: true),
-                        _OutputLine(text: widget.output, success: true),
-                        _OutputLine(text: 'exit code 0', muted: true),
-                        const SizedBox(height: 8),
-                        _ResultCard(language: widget.language),
-                      ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+                  child: Text(
+                    'COLLABORATORS',
+                    style: AppTheme.label.copyWith(
+                      fontSize: 9,
+                      letterSpacing: 0.7,
                     ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+
+                ...widget.collaborators.asMap().entries.map(
+                  (e) => _CollabRow(collaborator: e.value, index: e.key),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Container(
+                    height: 1,
+                    color: AppColors.white.withValues(alpha: 0.04),
+                  ),
+                ),
+
+                _SectionHeader(
+                  dot: true,
+                  dotActive: widget.isRunning,
+                  label: widget.isRunning ? 'Running...' : 'Output',
+                ),
+
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+                    child: widget.output.isEmpty
+                        ? Text(
+                            'Run your code\nto see output.',
+                            style: AppTheme.label.copyWith(
+                              fontSize: 10,
+                              height: 1.6,
+                              letterSpacing: 0,
+                            ),
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _OutputLine(text: 'running...', muted: true),
+                              _OutputLine(text: widget.output, success: true),
+                              _OutputLine(text: 'exit code 0', muted: true),
+                              const SizedBox(height: 8),
+                              _ResultCard(language: widget.language),
+                            ],
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -148,7 +183,9 @@ class _SectionHeader extends StatelessWidget {
 
 class _CollabRow extends StatefulWidget {
   final Collaborator collaborator;
-  const _CollabRow({required this.collaborator});
+  final int index;
+
+  const _CollabRow({required this.collaborator, required this.index});
 
   @override
   State<_CollabRow> createState() => _CollabRowState();
@@ -170,13 +207,9 @@ class _CollabRowState extends State<_CollabRow>
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
-    // stagger per collaborator id
-    Future.delayed(
-      Duration(milliseconds: int.parse(widget.collaborator.id) * 300),
-      () {
-        if (mounted) _ctrl.forward();
-      },
-    );
+    Future.delayed(Duration(milliseconds: widget.index * 300), () {
+      if (mounted) _ctrl.forward();
+    });
   }
 
   @override
@@ -191,7 +224,6 @@ class _CollabRowState extends State<_CollabRow>
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       child: Row(
         children: [
-          // Avatar
           Container(
             width: 18,
             height: 18,
@@ -211,7 +243,6 @@ class _CollabRowState extends State<_CollabRow>
             ),
           ),
           const SizedBox(width: 7),
-          // Name
           Expanded(
             child: Text(
               widget.collaborator.name,
@@ -222,7 +253,6 @@ class _CollabRowState extends State<_CollabRow>
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          // Blinking cursor
           AnimatedBuilder(
             animation: _anim,
             builder: (_, __) => Opacity(

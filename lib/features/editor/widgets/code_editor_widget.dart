@@ -6,11 +6,13 @@ import '../../../core/constants/app_colors.dart';
 class CodeEditorWidget extends StatelessWidget {
   final CodeController controller;
   final bool readOnly;
+  final Function(String)? onChanged;
 
   const CodeEditorWidget({
     super.key,
     required this.controller,
     this.readOnly = false,
+    this.onChanged,
   });
 
   @override
@@ -20,10 +22,10 @@ class CodeEditorWidget extends StatelessWidget {
       child: SingleChildScrollView(
         child: Stack(
           children: [
-            // ── Original CodeField — bilkul same as before ──
             CodeField(
               controller: controller,
               readOnly: readOnly,
+              onChanged: onChanged,
               textStyle: const TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 14,
@@ -32,7 +34,10 @@ class CodeEditorWidget extends StatelessWidget {
               gutterStyle: const GutterStyle(
                 width: 48,
                 margin: 8,
-                textStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                textStyle: TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 13,
+                ),
                 background: AppColors.surface,
                 textAlign: TextAlign.center,
               ),
@@ -40,7 +45,7 @@ class CodeEditorWidget extends StatelessWidget {
               minLines: 30,
             ),
 
-            // ── Sirf yeh naya add kiya — separator line ──
+            // Separator line
             Positioned(
               top: 0,
               bottom: 0,

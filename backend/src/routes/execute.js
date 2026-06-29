@@ -9,6 +9,14 @@ const LANGUAGE_MAP = {
   dart:       'dart',
 };
 
+const FILE_MAP = {
+  python:     'index.py',
+  nodejs:     'index.js',
+  java:       'Main.java',
+  cpp:        'index.cpp',
+  dart:       'index.dart',
+};
+
 router.post('/', async (req, res) => {
   const { language, code, stdin } = req.body;
 
@@ -19,6 +27,15 @@ router.post('/', async (req, res) => {
   const lang = LANGUAGE_MAP[language.toLowerCase()];
   if (!lang) {
     return res.status(400).json({ error: 'Language not supported' });
+  }
+
+  // Java class name fix — Main hona chahiye
+  let finalCode = code;
+  if (lang === 'java') {
+    finalCode = code.replace(
+      /public\s+class\s+\w+/,
+      'public class Main'
+    );
   }
 
   try {
@@ -34,8 +51,8 @@ router.post('/', async (req, res) => {
         stdin: stdin || '',
         files: [
           {
-            name: 'main',
-            content: code,
+            name: FILE_MAP[lang],
+            content: finalCode,
           },
         ],
       }),

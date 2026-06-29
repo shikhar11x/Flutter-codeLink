@@ -30,6 +30,8 @@ class EditorScreen extends StatefulWidget {
   State<EditorScreen> createState() => _EditorScreenState();
 }
 
+String _fileName = 'Main.java'; // 👈 add karo
+
 class _EditorScreenState extends State<EditorScreen> {
   String _selectedLanguage = 'Java';
   UserRole _currentRole = UserRole.owner;
@@ -139,11 +141,11 @@ class _EditorScreenState extends State<EditorScreen> {
       _codeController = CodeController(
         text: _codeController.text,
         language: switch (lang) {
-          'Java'       => java,
-          'Python'     => python,
+          'Java' => java,
+          'Python' => python,
           'JavaScript' => javascript,
-          'C++'        => cpp,
-          _            => dart,
+          'C++' => cpp,
+          _ => dart,
         },
       );
     });
@@ -239,16 +241,13 @@ class _EditorScreenState extends State<EditorScreen> {
               width: 7,
               height: 7,
               decoration: BoxDecoration(
-                color: _isConnected
-                    ? const Color(0xFF00FF94)
-                    : Colors.orange,
+                color: _isConnected ? const Color(0xFF00FF94) : Colors.orange,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: (_isConnected
-                            ? const Color(0xFF00FF94)
-                            : Colors.orange)
-                        .withValues(alpha: 0.5),
+                    color:
+                        (_isConnected ? const Color(0xFF00FF94) : Colors.orange)
+                            .withValues(alpha: 0.5),
                     blurRadius: 6,
                   ),
                 ],
@@ -289,13 +288,9 @@ class _EditorScreenState extends State<EditorScreen> {
           Container(
             margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
             decoration: BoxDecoration(
-              color: _isRunning
-                  ? AppColors.surface
-                  : AppColors.whiteDim,
+              color: _isRunning ? AppColors.surface : AppColors.whiteDim,
               borderRadius: BorderRadius.circular(8),
-              border: _isRunning
-                  ? Border.all(color: AppColors.border)
-                  : null,
+              border: _isRunning ? Border.all(color: AppColors.border) : null,
               boxShadow: _isRunning
                   ? null
                   : [
@@ -394,6 +389,9 @@ class _EditorScreenState extends State<EditorScreen> {
                     child: LanguageBar(
                       selected: _selectedLanguage,
                       onChanged: _changeLanguage,
+                      onFileNameChanged: (name) {
+                        setState(() => _fileName = name);
+                      },
                     ),
                   ),
                 ),

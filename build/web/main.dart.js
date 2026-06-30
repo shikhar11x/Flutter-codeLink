@@ -47245,37 +47245,39 @@ s.a6G()},
 I(a){var s,r,q,p,o,n,m,l,k,j=this,i=null,h="monospace",g=j.ch
 g===$&&A.a()
 g=A.aN2(0,A.fe(g,new A.aws(j),i))
-s=A.cc(20)
-r=B.d.aN(25.5)
-q=A.dO(A.ao(r,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255),1)
+s=j.x
+r=A.ao(B.d.aN(76.5),B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255)
+q=B.d.aN(25.5)
+r=A.bz(s,i,i,i,A.ct(i,i,B.i,i,i,i,i,i,h,i,i,38,i,i,B.bi,i,i,!0,i,2,i,i,i,A.b([new A.l2(r,B.h,20),new A.l2(A.ao(q,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255),B.h,40)],t.kO),i,i),i,i)
+s=A.bz("Real-time collaborative code editor",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,12,i,i,i,i,i,!0,i,1,i,i,i,i,i,i),i,i)
+p=A.cc(14)
+o=A.dO(A.ao(20,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255),1)
+n=A.b([new A.cG(2,B.aJ,A.ao(8,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255),B.h,30)],t.E)
+m=A.ao(13,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255)
+l=t.p
+m=A.bt(i,A.cI(A.b([new A.yO(B.F4,i),B.em,new A.yO(B.FQ,i),B.em,new A.yO(B.FB,i),B.mh,A.bz("codelink \u2014 zsh",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,11,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i),B.AP,new A.Ib(B.i,i),B.VU,A.bz("3,421 online",i,i,i,A.ct(i,i,B.au,i,i,i,i,i,h,i,i,10,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i)],l),B.C,B.y,B.J),B.m,i,i,new A.bC(B.bX,i,new A.dF(B.p,B.p,new A.aY(m,1,B.u,-1),B.p),B.Cr,i,i,B.F),i,i,i,i,B.Hn,i,i,i)
+k=A.b([A.bz("~ $ ",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,13,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i),A.bz(j.e,i,i,i,B.Bl,i,i)],l)
+if(j.f<12)k.push(new A.xK(B.i,i))
+k=A.b([A.cI(k,B.C,B.y,B.J)],l)
+if(j.Q)B.b.N(k,A.b([B.mi,new A.tF("Creating pad...",B.a8,i)],l))
+if(j.as)B.b.N(k,A.b([B.fI,new A.tF("\u2713 swift-river-4829 ready",B.au,i)],l))
+if(j.at)B.b.N(k,A.b([B.fI,new A.tF("\u2713 Sharing link copied",B.au,i)],l))
+if(j.ax)B.b.N(k,A.b([B.fI,A.cI(A.b([A.bz("~ $ ",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,13,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i),new A.xK(B.i,i)],l),B.C,B.y,B.J)],l))
+if(j.ay)B.b.N(k,A.b([B.eo,new A.D7(new A.awt(j,a),i),B.dq,A.eV(A.xc(A.bz("or open an existing pad",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,11,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i),i,new A.awu(j,a),i),i,i)],l))
+s=A.b([B.W3,r,B.mi,s,B.W2,A.bt(i,A.eW(A.b([m,new A.bX(B.oC,A.eW(k,B.av,B.y,B.J,B.ac),i)],l),B.av,B.y,B.J,B.ac),B.m,i,i,new A.bC(B.bh,i,o,p,n,i,B.F),i,i,i,i,i,i,i,1/0)],l)
+if(J.iC(j.CW))s.push(new A.Rq(j.CW,i))
+s.push(B.W1)
+s.push(A.bz("No account needed \u2014 just share the link",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,11,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i))
+s.push(B.eo)
+s=A.Ed(!0,new A.bX(B.Hy,A.anY(A.eW(s,B.C,B.y,B.J,B.ac),i,i,B.as),i),!0)
+r=A.cc(20)
+q=A.dO(A.ao(q,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255),1)
 p=$.ut!=null
 o=A.kA(p?B.Im:B.Il,B.au,i,13)
 if(p){p=$.aFD
 p=p==null?i:J.aG(p,"name")
 if(p==null)p="Logout"}else p="Login"
-n=t.p
-s=A.kT(i,A.Ed(!0,A.en(i,A.bt(i,A.cI(A.b([o,B.em,A.bz(p,i,i,i,A.ct(i,i,B.au,i,i,i,i,i,h,i,i,12,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i)],n),B.C,B.y,B.aM),B.m,i,i,new A.bC(B.bh,i,q,s,i,i,B.F),i,i,i,i,B.Hl,i,i,i),B.V,!1,i,i,i,i,i,i,i,i,i,i,i,i,i,i,j.gacF(),i,i,i,i,i,i),!0),i,i,i,16,16,i)
-r=A.bz(j.x,i,i,i,A.ct(i,i,B.i,i,i,i,i,i,h,i,i,38,i,i,B.bi,i,i,!0,i,2,i,i,i,A.b([new A.l2(A.ao(B.d.aN(76.5),B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255),B.h,20),new A.l2(A.ao(r,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255),B.h,40)],t.kO),i,i),i,i)
-q=A.bz("Real-time collaborative code editor",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,12,i,i,i,i,i,!0,i,1,i,i,i,i,i,i),i,i)
-p=A.cc(14)
-o=A.dO(A.ao(20,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255),1)
-m=A.b([new A.cG(2,B.aJ,A.ao(8,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255),B.h,30)],t.E)
-l=A.ao(13,B.i.v()>>>16&255,B.i.v()>>>8&255,B.i.v()&255)
-l=A.bt(i,A.cI(A.b([new A.yO(B.F4,i),B.em,new A.yO(B.FQ,i),B.em,new A.yO(B.FB,i),B.mh,A.bz("codelink \u2014 zsh",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,11,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i),B.AP,new A.Ib(B.i,i),B.VU,A.bz("3,421 online",i,i,i,A.ct(i,i,B.au,i,i,i,i,i,h,i,i,10,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i)],n),B.C,B.y,B.J),B.m,i,i,new A.bC(B.bX,i,new A.dF(B.p,B.p,new A.aY(l,1,B.u,-1),B.p),B.Cr,i,i,B.F),i,i,i,i,B.Hn,i,i,i)
-k=A.b([A.bz("~ $ ",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,13,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i),A.bz(j.e,i,i,i,B.Bl,i,i)],n)
-if(j.f<12)k.push(new A.xK(B.i,i))
-k=A.b([A.cI(k,B.C,B.y,B.J)],n)
-if(j.Q)B.b.N(k,A.b([B.mi,new A.tF("Creating pad...",B.a8,i)],n))
-if(j.as)B.b.N(k,A.b([B.fI,new A.tF("\u2713 swift-river-4829 ready",B.au,i)],n))
-if(j.at)B.b.N(k,A.b([B.fI,new A.tF("\u2713 Sharing link copied",B.au,i)],n))
-if(j.ax)B.b.N(k,A.b([B.fI,A.cI(A.b([A.bz("~ $ ",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,13,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i),new A.xK(B.i,i)],n),B.C,B.y,B.J)],n))
-if(j.ay)B.b.N(k,A.b([B.eo,new A.D7(new A.awt(j,a),i),B.dq,A.eV(A.xc(A.bz("or open an existing pad",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,11,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i),i,new A.awu(j,a),i),i,i)],n))
-r=A.b([B.W3,r,B.mi,q,B.W2,A.bt(i,A.eW(A.b([l,new A.bX(B.oC,A.eW(k,B.av,B.y,B.J,B.ac),i)],n),B.av,B.y,B.J,B.ac),B.m,i,i,new A.bC(B.bh,i,o,p,m,i,B.F),i,i,i,i,i,i,i,1/0)],n)
-if(J.iC(j.CW))r.push(new A.Rq(j.CW,i))
-r.push(B.W1)
-r.push(A.bz("No account needed \u2014 just share the link",i,i,i,A.ct(i,i,B.a8,i,i,i,i,i,h,i,i,11,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i))
-r.push(B.eo)
-return A.aNw(i,B.bX,A.jW(B.bV,A.b([g,s,A.Ed(!0,new A.bX(B.Hy,A.anY(A.eW(r,B.C,B.y,B.J,B.ac),i,i,B.as),i),!0)],n),B.P,B.bS))}}
+return A.aNw(i,B.bX,A.jW(B.bV,A.b([g,s,A.kT(i,A.Ed(!0,A.en(i,A.bt(i,A.cI(A.b([o,B.em,A.bz(p,i,i,i,A.ct(i,i,B.au,i,i,i,i,i,h,i,i,12,i,i,i,i,i,!0,i,i,i,i,i,i,i,i),i,i)],l),B.C,B.y,B.aM),B.m,i,i,new A.bC(B.bh,i,q,r,i,i,B.F),i,i,i,i,B.Hl,i,i,i),B.V,!1,i,i,i,i,i,i,i,i,i,i,i,i,i,i,j.gacF(),i,i,i,i,i,i),!0),i,i,i,16,16,i)],l),B.P,B.bS))}}
 A.awa.prototype={
 $1(a){return new A.lR(this.a,null)},
 $S:109}

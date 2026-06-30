@@ -9,14 +9,6 @@ const LANGUAGE_MAP = {
   dart:       'dart',
 };
 
-const FILE_MAP = {
-  python:     'index.py',
-  nodejs:     'index.js',
-  java:       'Main.java',
-  cpp:        'index.cpp',
-  dart:       'index.dart',
-};
-
 router.post('/', async (req, res) => {
   const { language, code, stdin } = req.body;
 
@@ -29,13 +21,13 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Language not supported' });
   }
 
-  // Java class name fix — Main hona chahiye
-  let finalCode = code;
+  // Java ke liye code se class name nikaalo aur file name match karo
+  let fileName = `index.${lang === 'java' ? 'java' : lang === 'nodejs' ? 'js' : lang === 'cpp' ? 'cpp' : lang === 'python' ? 'py' : 'dart'}`;
+
   if (lang === 'java') {
-    finalCode = code.replace(
-      /public\s+class\s+\w+/,
-      'public class Main'
-    );
+    const match = code.match(/(?:public\s+)?class\s+(\w+)/);
+    const className = match ? match[1] : 'Main';
+    fileName = `${className}.java`;
   }
 
   try {
@@ -51,8 +43,8 @@ router.post('/', async (req, res) => {
         stdin: stdin || '',
         files: [
           {
-            name: FILE_MAP[lang],
-            content: finalCode,
+            name: fileName,
+            content: code,
           },
         ],
       }),

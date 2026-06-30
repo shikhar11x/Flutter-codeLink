@@ -84,5 +84,23 @@ router.patch('/:slug', optionalAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// Delete pad
+router.delete('/:slug', optionalAuth, async (req, res) => {
+  const { slug } = req.params;
 
+  try {
+    const result = await pool.query(
+      'DELETE FROM pads WHERE slug = $1 RETURNING id',
+      [slug]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Pad not found' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;

@@ -12,11 +12,7 @@ class PadService {
     try {
       final response = await ApiClient.instance.post(
         '/api/pads',
-        data: {
-          'slug': slug,
-          'language': language,
-          'content': content,
-        },
+        data: {'slug': slug, 'language': language, 'content': content},
       );
       return response.data['pad'];
     } catch (e) {
@@ -37,7 +33,11 @@ class PadService {
   }
 
   // Update pad content
-  static Future<void> updatePad(String slug, {String? content, String? language}) async {
+  static Future<void> updatePad(
+    String slug, {
+    String? content,
+    String? language,
+  }) async {
     try {
       await ApiClient.instance.patch(
         '/api/pads/$slug',
@@ -48,6 +48,17 @@ class PadService {
       );
     } catch (e) {
       print('updatePad error: $e');
+    }
+  }
+
+  // Delete pad
+  static Future<bool> deletePad(String slug) async {
+    try {
+      await ApiClient.instance.delete('/api/pads/$slug');
+      return true;
+    } catch (e) {
+      print('deletePad error: $e');
+      return false;
     }
   }
 }

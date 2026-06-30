@@ -34,6 +34,9 @@ class EditorScreen extends StatefulWidget {
 class _EditorScreenState extends State<EditorScreen> {
   String _selectedLanguage = 'Java';
   UserRole _currentRole = UserRole.owner;
+  bool _showLineNumbers = true;
+  bool _wordWrap = false;
+  int _fontSize = 14;
   bool _isReadOnly = false;
   bool _isLoading = true;
   bool _isConnected = false;
@@ -195,7 +198,17 @@ class _EditorScreenState extends State<EditorScreen> {
       builder: (_) => SettingsSheet(
         currentRole: _currentRole,
         padSlug: widget.padSlug,
+        initialAnyoneCanEdit: !_isReadOnly,
+        initialLineNumbers: _showLineNumbers,
+        initialWordWrap: _wordWrap,
+        initialFontSize: _fontSize,
         onReadOnlyChanged: (val) => setState(() => _isReadOnly = val),
+        onLineNumbersChanged: (val) => setState(() => _showLineNumbers = val),
+        onWordWrapChanged: (val) => setState(() => _wordWrap = val),
+        onFontSizeChanged: (val) => setState(() => _fontSize = val),
+        onPadDeleted: () {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        },
       ),
     );
   }
@@ -372,6 +385,9 @@ class _EditorScreenState extends State<EditorScreen> {
                               controller: _codeController,
                               readOnly: _isReadOnly,
                               onChanged: _onCodeChanged,
+                              fontSize: _fontSize,
+                              showLineNumbers: _showLineNumbers,
+                              wordWrap: _wordWrap,
                             ),
                           ),
                           CollabPanel(

@@ -10,6 +10,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/network/socket_service.dart';
 import '../../../core/services/pad_service.dart';
 import '../../../core/services/execution_service.dart';
+import '../../../core/services/auth_service.dart';
 import '../../collaborator/models/collaborator_model.dart';
 import '../../collaborator/widgets/avatar_group.dart';
 import '../../collaborator/widgets/collab_panel.dart';
@@ -30,8 +31,6 @@ class EditorScreen extends StatefulWidget {
   State<EditorScreen> createState() => _EditorScreenState();
 }
 
-String _fileName = 'Main.java'; // 👈 add karo
-
 class _EditorScreenState extends State<EditorScreen> {
   String _selectedLanguage = 'Java';
   UserRole _currentRole = UserRole.owner;
@@ -41,6 +40,7 @@ class _EditorScreenState extends State<EditorScreen> {
   String _output = '';
   bool _isRunning = false;
   String _padTitle = '';
+  String _fileName = 'Main.java';
   late CodeController _codeController;
   DateTime? _lastEmit;
 
@@ -77,7 +77,12 @@ class _EditorScreenState extends State<EditorScreen> {
 
   void _connectSocket() {
     SocketService.connect();
-    SocketService.joinPad(widget.padSlug, 'You', '#D0D8FF');
+
+    final userName = AuthService.isLoggedIn
+        ? (AuthService.user?['name'] ?? 'Anonymous')
+        : 'Anonymous';
+
+    SocketService.joinPad(widget.padSlug, userName, '#D0D8FF');
 
     SocketService.onPadInit((data) {
       if (mounted) {

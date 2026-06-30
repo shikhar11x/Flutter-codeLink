@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/utils/slug_generator.dart';
+import '../../../core/services/auth_service.dart';
+import '../../../core/services/recent_pads_service.dart';
+import '../../auth/widgets/auth_sheet.dart';
 import '../widgets/open_pad_dialog.dart';
+import '../widgets/recent_pads_list.dart';
+import '../widgets/pad_input_box.dart';
 import '../../editor/screens/editor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -32,11 +36,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   late AnimationController _matrixCtrl;
 
+  List<Map<String, dynamic>> _recentPads = [];
+
   void _openEditor(BuildContext context, String slug) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => EditorScreen(padSlug: slug)),
     );
+  }
+
+  Future<void> _loadRecentPads() async {
+    if (AuthService.isLoggedIn) {
+      final pads = await RecentPadsService.getRecentPads();
+      if (mounted) setState(() => _recentPads = pads);
+    }
+  }
+
+  void _handleAuthTap() async {
+    if (AuthService.isLoggedIn) {
+      await AuthService.logout();
+      if (mounted) setState(() => _recentPads = []);
+    } else {
+      final loggedIn = await AuthSheet.show(context);
+      if (loggedIn == true) _loadRecentPads();
+      if (mounted) setState(() {});
+    }
   }
 
   @override
@@ -55,6 +79,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     Future.delayed(const Duration(milliseconds: 300), _startGlitch);
     Future.delayed(const Duration(milliseconds: 800), _startTypewriter);
+
+    _loadRecentPads();
   }
 
   void _startGlitch() {
@@ -146,169 +172,171 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
 
+          // ── Login button top-right ──
+          Positioned(
+            top: 16,
+            right: 16,
+            child: SafeArea(
+              child: GestureDetector(
+                onTap: _handleAuthTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.white.withOpacity(0.1),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        AuthService.isLoggedIn
+                            ? Icons.logout_rounded
+                            : Icons.login_rounded,
+                        size: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        AuthService.isLoggedIn
+                            ? (AuthService.user?['name'] ?? 'Logout')
+                            : 'Login',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           // ── Content ──
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  const Spacer(flex: 2),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 60),
 
-                  // Glitch title
-                  Text(
-                    _glitchTitle,
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 38,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'monospace',
-                      letterSpacing: 2,
-                      shadows: [
-                        Shadow(
-                          color: AppColors.white.withOpacity(0.3),
-                          blurRadius: 20,
-                        ),
-                        Shadow(
-                          color: AppColors.white.withOpacity(0.1),
-                          blurRadius: 40,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Real-time collaborative code editor',
-                    style: TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 12,
-                      fontFamily: 'monospace',
-                      letterSpacing: 1,
-                    ),
-                  ),
-
-                  const Spacer(flex: 2),
-
-                  // ── Terminal Card ──
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.white.withOpacity(0.08),
+                    // Glitch title
+                    Text(
+                      _glitchTitle,
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 38,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'monospace',
+                        letterSpacing: 2,
+                        shadows: [
+                          Shadow(
+                            color: AppColors.white.withOpacity(0.3),
+                            blurRadius: 20,
+                          ),
+                          Shadow(
+                            color: AppColors.white.withOpacity(0.1),
+                            blurRadius: 40,
+                          ),
+                        ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.white.withOpacity(0.03),
-                          blurRadius: 30,
-                          spreadRadius: 2,
-                        ),
-                      ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title bar
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.bg,
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(14),
-                            ),
-                            border: Border(
-                              bottom: BorderSide(
-                                color: AppColors.white.withOpacity(0.05),
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              _TrafficDot(color: const Color(0xFFFF5F57)),
-                              const SizedBox(width: 6),
-                              _TrafficDot(color: const Color(0xFFFFBD2E)),
-                              const SizedBox(width: 6),
-                              _TrafficDot(color: const Color(0xFF28C840)),
-                              const SizedBox(width: 12),
-                              Text(
-                                'codelink — zsh',
-                                style: TextStyle(
-                                  color: AppColors.textMuted,
-                                  fontSize: 11,
-                                  fontFamily: 'monospace',
-                                ),
-                              ),
-                              const Spacer(),
-                              _PulseDot(color: AppColors.white),
-                              const SizedBox(width: 5),
-                              Text(
-                                '3,421 online',
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 10,
-                                  fontFamily: 'monospace',
-                                ),
-                              ),
-                            ],
-                          ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Real-time collaborative code editor',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        letterSpacing: 1,
+                      ),
+                    ),
+
+                    const SizedBox(height: 50),
+
+                    // ── Terminal Card ──
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppColors.white.withOpacity(0.08),
                         ),
-
-                        // Terminal body
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Typewriter line
-                              Row(
-                                children: [
-                                  Text(
-                                    '~ \$ ',
-                                    style: TextStyle(
-                                      color: AppColors.textMuted,
-                                      fontSize: 13,
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                  Text(
-                                    _typedText,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                  if (_typeIndex < _fullText.length)
-                                    _BlinkingCursor(color: AppColors.white),
-                                ],
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.white.withOpacity(0.03),
+                            blurRadius: 30,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title bar
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.bg,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(14),
                               ),
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: AppColors.white.withOpacity(0.05),
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                _TrafficDot(color: const Color(0xFFFF5F57)),
+                                const SizedBox(width: 6),
+                                _TrafficDot(color: const Color(0xFFFFBD2E)),
+                                const SizedBox(width: 6),
+                                _TrafficDot(color: const Color(0xFF28C840)),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'codelink — zsh',
+                                  style: TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontSize: 11,
+                                    fontFamily: 'monospace',
+                                  ),
+                                ),
+                                const Spacer(),
+                                _PulseDot(color: AppColors.white),
+                                const SizedBox(width: 5),
+                                Text(
+                                  '3,421 online',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 10,
+                                    fontFamily: 'monospace',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
 
-                              if (_showCreating) ...[
-                                const SizedBox(height: 6),
-                                _FadeInLine(
-                                  text: 'Creating pad...',
-                                  color: AppColors.textMuted,
-                                ),
-                              ],
-                              if (_showReady) ...[
-                                const SizedBox(height: 4),
-                                _FadeInLine(
-                                  text: '✓ swift-river-4829 ready',
-                                  color: AppColors.textSecondary,
-                                ),
-                              ],
-                              if (_showCopied) ...[
-                                const SizedBox(height: 4),
-                                _FadeInLine(
-                                  text: '✓ Sharing link copied',
-                                  color: AppColors.textSecondary,
-                                ),
-                              ],
-                              if (_showPrompt2) ...[
-                                const SizedBox(height: 4),
+                          // Terminal body
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Typewriter line
                                 Row(
                                   children: [
                                     Text(
@@ -319,140 +347,107 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         fontFamily: 'monospace',
                                       ),
                                     ),
-                                    _BlinkingCursor(color: AppColors.white),
+                                    Text(
+                                      _typedText,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontFamily: 'monospace',
+                                      ),
+                                    ),
+                                    if (_typeIndex < _fullText.length)
+                                      _BlinkingCursor(color: AppColors.white),
                                   ],
                                 ),
-                              ],
 
-                              if (_showButtons) ...[
-                                const SizedBox(height: 20),
-                                Row(
-                                  children: [
-                                    // New Pad
-                                    Expanded(
-                                      flex: 1,
-                                      child: GestureDetector(
-                                        onTap: () => _openEditor(
-                                          context,
-                                          SlugGenerator.generate(),
+                                if (_showCreating) ...[
+                                  const SizedBox(height: 6),
+                                  _FadeInLine(
+                                    text: 'Creating pad...',
+                                    color: AppColors.textMuted,
+                                  ),
+                                ],
+                                if (_showReady) ...[
+                                  const SizedBox(height: 4),
+                                  _FadeInLine(
+                                    text: '✓ swift-river-4829 ready',
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ],
+                                if (_showCopied) ...[
+                                  const SizedBox(height: 4),
+                                  _FadeInLine(
+                                    text: '✓ Sharing link copied',
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ],
+                                if (_showPrompt2) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '~ \$ ',
+                                        style: TextStyle(
+                                          color: AppColors.textMuted,
+                                          fontSize: 13,
+                                          fontFamily: 'monospace',
                                         ),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 14,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.whiteDim,
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: AppColors.white
-                                                    .withOpacity(0.12),
-                                                blurRadius: 16,
-                                              ),
-                                            ],
-                                          ),
-                                          child: const Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.play_arrow_rounded,
-                                                color: Colors.black,
-                                                size: 16,
-                                              ),
-                                              SizedBox(width: 6),
-                                              Text(
-                                                'New Pad',
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                  fontFamily: 'monospace',
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                      ),
+                                      _BlinkingCursor(color: AppColors.white),
+                                    ],
+                                  ),
+                                ],
+
+                                if (_showButtons) ...[
+                                  const SizedBox(height: 20),
+                                  PadInputBox(
+                                    onSubmit: (slug) =>
+                                        _openEditor(context, slug),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Center(
+                                    child: TextButton(
+                                      onPressed: () async {
+                                        final slug =
+                                            await OpenPadDialog.show(context);
+                                        if (slug != null && context.mounted) {
+                                          _openEditor(context, slug);
+                                        }
+                                      },
+                                      child: Text(
+                                        'or open an existing pad',
+                                        style: TextStyle(
+                                          color: AppColors.textMuted,
+                                          fontSize: 11,
+                                          fontFamily: 'monospace',
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
-
-                                    // Open slug
-                                    Expanded(
-                                      flex: 1,
-                                      child: GestureDetector(
-                                        onTap: () async {
-                                          final slug = await OpenPadDialog.show(
-                                            context,
-                                          );
-                                          if (slug != null && context.mounted) {
-                                            _openEditor(context, slug);
-                                          }
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 14,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                            border: Border.all(
-                                              color: AppColors.white
-                                                  .withOpacity(0.1),
-                                            ),
-                                          ),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                '\$ open',
-                                                style: TextStyle(
-                                                  color:
-                                                      AppColors.textSecondary,
-                                                  fontSize: 13,
-                                                  fontFamily: 'monospace',
-                                                ),
-                                              ),
-                                              Text(
-                                                'slug',
-                                                style: TextStyle(
-                                                  color: AppColors.textMuted,
-                                                  fontSize: 13,
-                                                  fontFamily: 'monospace',
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const Spacer(),
+                    if (_recentPads.isNotEmpty)
+                      RecentPadsList(pads: _recentPads),
 
-                  Text(
-                    'No account needed — just share the link',
-                    style: TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 11,
-                      fontFamily: 'monospace',
+                    const SizedBox(height: 40),
+
+                    Text(
+                      'No account needed — just share the link',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                        fontFamily: 'monospace',
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),

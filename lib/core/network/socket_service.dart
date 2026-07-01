@@ -25,6 +25,21 @@ class SocketService {
     socket.disconnect();
   }
 
+  static void sendPadLock(String slug, bool locked, String lockedBy) {
+    socket.emit('pad_lock', {
+      'slug': slug,
+      'locked': locked,
+      'lockedBy': lockedBy,
+    });
+  }
+
+  static void onPadLocked(Function(bool, String) callback) {
+    socket.on(
+      'pad_locked',
+      (data) => callback(data['locked'] as bool, data['lockedBy'] as String),
+    );
+  }
+
   static void joinPad(String slug, String userName, String color) {
     socket.emit('join_pad', {
       'slug': slug,

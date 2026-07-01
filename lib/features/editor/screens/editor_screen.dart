@@ -11,6 +11,7 @@ import '../../../core/network/socket_service.dart';
 import '../../../core/services/pad_service.dart';
 import '../../../core/services/execution_service.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/utils/slug_generator.dart';
 import '../../collaborator/models/collaborator_model.dart';
 import '../../collaborator/widgets/avatar_group.dart';
 import '../../collaborator/widgets/collab_panel.dart';
@@ -44,6 +45,8 @@ class _EditorScreenState extends State<EditorScreen> {
   bool _isRunning = false;
   String _padTitle = '';
   String _fileName = 'Main.java';
+  bool _isLocked = false;
+  String _lockedBy = '';
   late CodeController _codeController;
   DateTime? _lastEmit;
 
@@ -131,6 +134,19 @@ class _EditorScreenState extends State<EditorScreen> {
     SocketService.onLanguageUpdate((lang) {
       if (mounted) _changeLanguage(lang, emit: false);
     });
+
+    // Lock status update
+    SocketService.onPadLocked((locked, lockedBy) {
+      if (mounted) {
+        setState(() {
+          _isLocked = locked;
+          _lockedBy = lockedBy;
+          if (_currentRole != UserRole.owner) {
+            _isReadOnly = locked;
+          }
+        });
+      }
+    });
   }
 
   void _onCodeChanged(String content) {
@@ -149,11 +165,11 @@ class _EditorScreenState extends State<EditorScreen> {
       _codeController = CodeController(
         text: _codeController.text,
         language: switch (lang) {
-          'Java' => java,
-          'Python' => python,
+          'Java'       => java,
+          'Python'     => python,
           'JavaScript' => javascript,
-          'C++' => cpp,
-          _ => dart,
+          'C++'        => cpp,
+          _            => dart,
         },
       );
     });
@@ -162,23 +178,43 @@ class _EditorScreenState extends State<EditorScreen> {
 
   Future<void> _runCode() async {
     if (_isRunning) return;
-
     setState(() {
       _isRunning = true;
       _output = '';
     });
-
     final result = await ExecutionService.execute(
       language: _selectedLanguage,
       code: _codeController.text,
     );
-
     if (mounted) {
       setState(() {
         _isRunning = false;
         _output = result.output;
       });
     }
+  }
+
+  void _handleLockToggle() {
+    final userName = AuthService.isLoggedIn
+        ? (AuthService.user?['name'] ?? 'Owner')
+        : 'Owner';
+
+    final newLocked = !_isReadOnly;
+    setState(() {
+      _isReadOnly = newLocked;
+      _isLocked = newLocked;
+      _lockedBy = userName;
+    });
+    SocketService.sendPadLock(widget.padSlug, newLocked, userName);
+  }
+
+  void _openNewPad() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditorScreen(padSlug: SlugGenerator.generate()),
+      ),
+    );
   }
 
   void _showShareDrawer() {
@@ -259,13 +295,16 @@ class _EditorScreenState extends State<EditorScreen> {
               width: 7,
               height: 7,
               decoration: BoxDecoration(
-                color: _isConnected ? const Color(0xFF00FF94) : Colors.orange,
+                color: _isConnected
+                    ? const Color(0xFF00FF94)
+                    : Colors.orange,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color:
-                        (_isConnected ? const Color(0xFF00FF94) : Colors.orange)
-                            .withValues(alpha: 0.5),
+                    color: (_isConnected
+                            ? const Color(0xFF00FF94)
+                            : Colors.orange)
+                        .withValues(alpha: 0.5),
                     blurRadius: 6,
                   ),
                 ],
@@ -395,6 +434,14 @@ class _EditorScreenState extends State<EditorScreen> {
                             output: _output,
                             isRunning: _isRunning,
                             language: _selectedLanguage,
+                            isOwner: _currentRole == UserRole.owner,
+                            isReadOnly: _isReadOnly,
+                            isLocked: _isLocked,
+                            lockedBy: _lockedBy,
+                            onLockToggle: _currentRole == UserRole.owner
+                                ? _handleLockToggle
+                                : null,
+                            onNewPad: _openNewPad,
                           ),
                         ],
                       ),

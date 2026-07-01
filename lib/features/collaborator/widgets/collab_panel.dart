@@ -8,6 +8,12 @@ class CollabPanel extends StatefulWidget {
   final String output;
   final bool isRunning;
   final String language;
+  final bool isOwner;
+  final bool isReadOnly;
+  final bool isLocked;
+  final String lockedBy;
+  final VoidCallback? onLockToggle;
+  final VoidCallback? onNewPad;
 
   const CollabPanel({
     super.key,
@@ -15,6 +21,12 @@ class CollabPanel extends StatefulWidget {
     this.output = '',
     this.isRunning = false,
     required this.language,
+    this.isOwner = false,
+    this.isReadOnly = false,
+    this.isLocked = false,
+    this.lockedBy = '',
+    this.onLockToggle,
+    this.onNewPad,
   });
 
   @override
@@ -81,8 +93,102 @@ class _CollabPanelState extends State<CollabPanel> {
                 const SizedBox(height: 6),
 
                 ...widget.collaborators.asMap().entries.map(
-                  (e) => _CollabRow(collaborator: e.value, index: e.key),
+                  (e) => _CollabRow(
+                    collaborator: e.value,
+                    index: e.key,
+                  ),
                 ),
+
+                // ── Lock status ──
+                if (widget.isLocked && !widget.isOwner) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.lock_rounded,
+                          size: 10,
+                          color: Colors.orange,
+                        ),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            'Locked by ${widget.lockedBy}',
+                            style: const TextStyle(
+                              color: Colors.orange,
+                              fontSize: 9,
+                              fontFamily: 'monospace',
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                // ── Owner lock button ──
+                if (widget.isOwner) ...[
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: widget.onLockToggle,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: widget.isReadOnly
+                            ? Colors.orange.withValues(alpha: 0.08)
+                            : AppColors.card,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: widget.isReadOnly
+                              ? Colors.orange.withValues(alpha: 0.3)
+                              : AppColors.border,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            widget.isReadOnly
+                                ? Icons.lock_rounded
+                                : Icons.lock_open_rounded,
+                            size: 10,
+                            color: widget.isReadOnly
+                                ? Colors.orange
+                                : AppColors.textMuted,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            widget.isReadOnly ? 'Locked' : 'Lock pad',
+                            style: TextStyle(
+                              color: widget.isReadOnly
+                                  ? Colors.orange
+                                  : AppColors.textMuted,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
 
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -114,12 +220,57 @@ class _CollabPanelState extends State<CollabPanel> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _OutputLine(text: 'running...', muted: true),
-                              _OutputLine(text: widget.output, success: true),
+                              _OutputLine(
+                                text: widget.output,
+                                success: true,
+                              ),
                               _OutputLine(text: 'exit code 0', muted: true),
                               const SizedBox(height: 8),
                               _ResultCard(language: widget.language),
                             ],
                           ),
+                  ),
+                ),
+
+                // ── New Pad button ──
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: GestureDetector(
+                    onTap: widget.onNewPad,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.whiteDim,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.white.withValues(alpha: 0.08),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add_rounded,
+                            color: Colors.black,
+                            size: 13,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'New Pad',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -148,7 +299,9 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: AppColors.white.withValues(alpha: 0.04)),
+          bottom: BorderSide(
+            color: AppColors.white.withValues(alpha: 0.04),
+          ),
         ),
       ),
       child: Row(
@@ -185,7 +338,10 @@ class _CollabRow extends StatefulWidget {
   final Collaborator collaborator;
   final int index;
 
-  const _CollabRow({required this.collaborator, required this.index});
+  const _CollabRow({
+    required this.collaborator,
+    required this.index,
+  });
 
   @override
   State<_CollabRow> createState() => _CollabRowState();
@@ -203,13 +359,15 @@ class _CollabRowState extends State<_CollabRow>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
-    _anim = Tween(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
-    Future.delayed(Duration(milliseconds: widget.index * 300), () {
-      if (mounted) _ctrl.forward();
-    });
+    _anim = Tween(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+    Future.delayed(
+      Duration(milliseconds: widget.index * 300),
+      () {
+        if (mounted) _ctrl.forward();
+      },
+    );
   }
 
   @override
@@ -313,8 +471,8 @@ class _OutputLine extends StatelessWidget {
               color: success
                   ? AppColors.green
                   : muted
-                  ? AppColors.textMuted
-                  : AppColors.textPrimary,
+                      ? AppColors.textMuted
+                      : AppColors.textPrimary,
             ),
           ),
         ),
@@ -333,12 +491,18 @@ class _ResultCard extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: AppColors.green.withValues(alpha: 0.05),
-        border: Border.all(color: AppColors.green.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: AppColors.green.withValues(alpha: 0.1),
+        ),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
         children: [
-          _ResRow(label: 'Status', value: '✓ OK', valueColor: AppColors.green),
+          _ResRow(
+            label: 'Status',
+            value: '✓ OK',
+            valueColor: AppColors.green,
+          ),
           const SizedBox(height: 3),
           _ResRow(label: 'Time', value: '0.08s'),
           const SizedBox(height: 3),
@@ -354,7 +518,11 @@ class _ResRow extends StatelessWidget {
   final String value;
   final Color? valueColor;
 
-  const _ResRow({required this.label, required this.value, this.valueColor});
+  const _ResRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
 
   @override
   Widget build(BuildContext context) {

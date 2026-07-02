@@ -135,7 +135,6 @@ class _EditorScreenState extends State<EditorScreen> {
       if (mounted) _changeLanguage(lang, emit: false);
     });
 
-    // Lock status update
     SocketService.onPadLocked((locked, lockedBy) {
       if (mounted) {
         setState(() {
@@ -198,7 +197,6 @@ class _EditorScreenState extends State<EditorScreen> {
     final userName = AuthService.isLoggedIn
         ? (AuthService.user?['name'] ?? 'Owner')
         : 'Owner';
-
     final newLocked = !_isReadOnly;
     setState(() {
       _isReadOnly = newLocked;
@@ -258,6 +256,8 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
@@ -302,8 +302,8 @@ class _EditorScreenState extends State<EditorScreen> {
                 boxShadow: [
                   BoxShadow(
                     color: (_isConnected
-                            ? const Color(0xFF00FF94)
-                            : Colors.orange)
+                        ? const Color(0xFF00FF94)
+                        : Colors.orange)
                         .withValues(alpha: 0.5),
                     blurRadius: 6,
                   ),
@@ -331,7 +331,6 @@ class _EditorScreenState extends State<EditorScreen> {
               size: 18,
               color: AppColors.textSecondary,
             ),
-            tooltip: 'Share',
           ),
           IconButton(
             onPressed: _showSettingsSheet,
@@ -340,7 +339,6 @@ class _EditorScreenState extends State<EditorScreen> {
               size: 18,
               color: AppColors.textSecondary,
             ),
-            tooltip: 'Settings',
           ),
           Container(
             margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
@@ -351,12 +349,12 @@ class _EditorScreenState extends State<EditorScreen> {
               boxShadow: _isRunning
                   ? null
                   : [
-                      BoxShadow(
-                        color: AppColors.white.withValues(alpha: 0.12),
-                        blurRadius: 12,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                BoxShadow(
+                  color: AppColors.white.withValues(alpha: 0.12),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Material(
               color: Colors.transparent,
@@ -406,65 +404,483 @@ class _EditorScreenState extends State<EditorScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF00FF94),
-                strokeWidth: 2,
-              ),
-            )
-          : Stack(
-              children: [
-                Column(
-                  children: [
-                    if (_isReadOnly) const ReadOnlyBanner(),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: CodeEditorWidget(
-                              controller: _codeController,
-                              readOnly: _isReadOnly,
-                              onChanged: _onCodeChanged,
-                              fontSize: _fontSize,
-                              showLineNumbers: _showLineNumbers,
-                              wordWrap: _wordWrap,
-                            ),
-                          ),
-                          CollabPanel(
-                            collaborators: _collaborators,
-                            output: _output,
-                            isRunning: _isRunning,
-                            language: _selectedLanguage,
-                            isOwner: _currentRole == UserRole.owner,
-                            isReadOnly: _isReadOnly,
-                            isLocked: _isLocked,
-                            lockedBy: _lockedBy,
-                            onLockToggle: _currentRole == UserRole.owner
-                                ? _handleLockToggle
-                                : null,
-                            onNewPad: _openNewPad,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 64),
-                  ],
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: LanguageBar(
-                      selected: _selectedLanguage,
-                      onChanged: _changeLanguage,
-                      onFileNameChanged: (name) {
-                        setState(() => _fileName = name);
-                      },
+        child: CircularProgressIndicator(
+          color: Color(0xFF00FF94),
+          strokeWidth: 2,
+        ),
+      )
+          : isMobile
+          ? _buildMobileLayout()
+          : _buildDesktopLayout(),
+    );
+  }
+
+  // ── Desktop Layout ──
+  Widget _buildDesktopLayout() {
+    return Stack(
+      children: [
+        Column(
+          children: [
+            if (_isReadOnly) const ReadOnlyBanner(),
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CodeEditorWidget(
+                      controller: _codeController,
+                      readOnly: _isReadOnly,
+                      onChanged: _onCodeChanged,
+                      fontSize: _fontSize,
+                      showLineNumbers: _showLineNumbers,
+                      wordWrap: _wordWrap,
                     ),
                   ),
-                ),
-              ],
+                  CollabPanel(
+                    collaborators: _collaborators,
+                    output: _output,
+                    isRunning: _isRunning,
+                    language: _selectedLanguage,
+                    isOwner: _currentRole == UserRole.owner,
+                    isReadOnly: _isReadOnly,
+                    isLocked: _isLocked,
+                    lockedBy: _lockedBy,
+                    onLockToggle: _currentRole == UserRole.owner
+                        ? _handleLockToggle
+                        : null,
+                    onNewPad: _openNewPad,
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: 64),
+          ],
+        ),
+        Positioned(
+          bottom: 20,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: LanguageBar(
+              selected: _selectedLanguage,
+              onChanged: _changeLanguage,
+              onFileNameChanged: (name) => setState(() => _fileName = name),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Mobile Layout ──
+  Widget _buildMobileLayout() {
+    return Column(
+      children: [
+        if (_isReadOnly) const ReadOnlyBanner(),
+
+        // Code editor
+        Expanded(
+          flex: 3,
+          child: CodeEditorWidget(
+            controller: _codeController,
+            readOnly: _isReadOnly,
+            onChanged: _onCodeChanged,
+            fontSize: _fontSize,
+            showLineNumbers: _showLineNumbers,
+            wordWrap: _wordWrap,
+          ),
+        ),
+
+        // Language bar
+        Container(
+          color: AppColors.surface,
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: LanguageBar(
+            selected: _selectedLanguage,
+            onChanged: _changeLanguage,
+            onFileNameChanged: (name) => setState(() => _fileName = name),
+          ),
+        ),
+
+        // Bottom panel
+        SizedBox(
+          height: 220,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border(
+                top: BorderSide(
+                  color: AppColors.white.withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+            child: _MobilePanelTabs(
+              collaborators: _collaborators,
+              output: _output,
+              isRunning: _isRunning,
+              language: _selectedLanguage,
+              isOwner: _currentRole == UserRole.owner,
+              isReadOnly: _isReadOnly,
+              isLocked: _isLocked,
+              lockedBy: _lockedBy,
+              onLockToggle: _currentRole == UserRole.owner
+                  ? _handleLockToggle
+                  : null,
+              onNewPad: _openNewPad,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Mobile Panel Tabs ──
+class _MobilePanelTabs extends StatefulWidget {
+  final List<Collaborator> collaborators;
+  final String output;
+  final bool isRunning;
+  final String language;
+  final bool isOwner;
+  final bool isReadOnly;
+  final bool isLocked;
+  final String lockedBy;
+  final VoidCallback? onLockToggle;
+  final VoidCallback? onNewPad;
+
+  const _MobilePanelTabs({
+    required this.collaborators,
+    required this.output,
+    required this.isRunning,
+    required this.language,
+    required this.isOwner,
+    required this.isReadOnly,
+    required this.isLocked,
+    required this.lockedBy,
+    this.onLockToggle,
+    this.onNewPad,
+  });
+
+  @override
+  State<_MobilePanelTabs> createState() => _MobilePanelTabsState();
+}
+
+class _MobilePanelTabsState extends State<_MobilePanelTabs> {
+  int _tab = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Tab bar
+        Row(
+          children: [
+            _TabBtn(
+              label: 'Output',
+              selected: _tab == 0,
+              onTap: () => setState(() => _tab = 0),
+              dot: widget.isRunning,
+              dotColor: AppColors.green,
+            ),
+            _TabBtn(
+              label: 'Collaborators',
+              selected: _tab == 1,
+              onTap: () => setState(() => _tab = 1),
+              dot: true,
+              dotColor: AppColors.green,
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: widget.onNewPad,
+              child: Container(
+                margin: const EdgeInsets.only(right: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.whiteDim,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.add_rounded, color: Colors.black, size: 12),
+                    SizedBox(width: 3),
+                    Text(
+                      'New Pad',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        // Content
+        Expanded(
+          child: _tab == 0
+              ? _OutputTab(
+            output: widget.output,
+            isRunning: widget.isRunning,
+            language: widget.language,
+          )
+              : _CollabTab(
+            collaborators: widget.collaborators,
+            isOwner: widget.isOwner,
+            isReadOnly: widget.isReadOnly,
+            isLocked: widget.isLocked,
+            lockedBy: widget.lockedBy,
+            onLockToggle: widget.onLockToggle,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TabBtn extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final bool dot;
+  final Color dotColor;
+
+  const _TabBtn({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.dot = false,
+    this.dotColor = AppColors.green,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: selected ? AppColors.white : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            if (dot)
+              Container(
+                width: 5,
+                height: 5,
+                margin: const EdgeInsets.only(right: 5),
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected
+                    ? AppColors.textPrimary
+                    : AppColors.textMuted,
+                fontSize: 11,
+                fontWeight:
+                selected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OutputTab extends StatelessWidget {
+  final String output;
+  final bool isRunning;
+  final String language;
+
+  const _OutputTab({
+    required this.output,
+    required this.isRunning,
+    required this.language,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: output.isEmpty
+          ? Text(
+        isRunning
+            ? 'Running...'
+            : 'Run your code to see output here...',
+        style: const TextStyle(
+          color: AppColors.textMuted,
+          fontFamily: 'monospace',
+          fontSize: 12,
+        ),
+      )
+          : SingleChildScrollView(
+        child: Text(
+          output,
+          style: const TextStyle(
+            color: AppColors.green,
+            fontFamily: 'monospace',
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CollabTab extends StatelessWidget {
+  final List<Collaborator> collaborators;
+  final bool isOwner;
+  final bool isReadOnly;
+  final bool isLocked;
+  final String lockedBy;
+  final VoidCallback? onLockToggle;
+
+  const _CollabTab({
+    required this.collaborators,
+    required this.isOwner,
+    required this.isReadOnly,
+    required this.isLocked,
+    required this.lockedBy,
+    this.onLockToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...collaborators.map(
+                (c) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: c.color,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        c.initials,
+                        style: const TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    c.name,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          if (isLocked && !isOwner)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: Colors.orange.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.lock_rounded,
+                    size: 11,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Locked by $lockedBy',
+                    style: const TextStyle(
+                      color: Colors.orange,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          if (isOwner)
+            GestureDetector(
+              onTap: onLockToggle,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: isReadOnly
+                      ? Colors.orange.withValues(alpha: 0.08)
+                      : AppColors.card,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: isReadOnly
+                        ? Colors.orange.withValues(alpha: 0.3)
+                        : AppColors.border,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isReadOnly
+                          ? Icons.lock_rounded
+                          : Icons.lock_open_rounded,
+                      size: 11,
+                      color: isReadOnly
+                          ? Colors.orange
+                          : AppColors.textMuted,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      isReadOnly ? 'Locked' : 'Lock pad',
+                      style: TextStyle(
+                        color: isReadOnly
+                            ? Colors.orange
+                            : AppColors.textMuted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -103,4 +103,9 @@ router.delete('/:slug', optionalAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Lock/unlock pad
+socket.on('pad_lock', ({ slug, locked, lockedBy }) => {
+  socket.to(slug).emit('pad_locked', { locked, lockedBy });
+});
 module.exports = router;

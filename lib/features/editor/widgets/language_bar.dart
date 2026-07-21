@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/slug_generator.dart';
 
 class LanguageBar extends StatefulWidget {
   final String selected;
@@ -73,6 +74,16 @@ class _LanguageBarState extends State<LanguageBar> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
+    if (isMobile) {
+      return _buildMobileBar();
+    }
+    return _buildDesktopBar();
+  }
+
+  // ── Desktop: single pill with file name + chips ──
+  Widget _buildDesktopBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -90,124 +101,145 @@ class _LanguageBarState extends State<LanguageBar> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // File name chip
-          GestureDetector(
-            onTap: _startEdit,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: _editingFileName
-                    ? AppColors.green.withValues(alpha: 0.1)
-                    : AppColors.card,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: _editingFileName
-                      ? AppColors.green.withValues(alpha: 0.4)
-                      : AppColors.border,
-                ),
-              ),
-              child: _editingFileName
-                  ? SizedBox(
-                      width: 100,
-                      child: TextField(
-                        controller: _fileController,
-                        autofocus: true,
-                        onSubmitted: (_) => _stopEdit(),
-                        onTapOutside: (_) => _stopEdit(),
-                        style: const TextStyle(
-                          color: AppColors.green,
-                          fontSize: 11,
-                          fontFamily: 'monospace',
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.insert_drive_file_rounded,
-                          size: 11,
-                          color: AppColors.green.withValues(alpha: 0.8),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _fileName,
-                          style: const TextStyle(
-                            color: AppColors.green,
-                            fontSize: 11,
-                            fontFamily: 'monospace',
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.edit_rounded,
-                          size: 9,
-                          color: AppColors.textMuted.withValues(alpha: 0.6),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-
+          _fileNameWidget(),
           const SizedBox(width: 8),
-
-          // Divider
-          Container(
-            width: 1,
-            height: 16,
-            color: AppColors.border,
-          ),
-
+          Container(width: 1, height: 16, color: AppColors.border),
           const SizedBox(width: 8),
-
-          // Language chips
-          ...LanguageBar.languages.map((lang) {
-            final isSelected = widget.selected == lang;
-            return Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: GestureDetector(
-                onTap: () => widget.onChanged(lang),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.white.withValues(alpha: 0.12)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.white.withValues(alpha: 0.2)
-                          : Colors.transparent,
-                    ),
-                  ),
-                  child: Text(
-                    lang,
-                    style: TextStyle(
-                      color: isSelected
-                          ? AppColors.textPrimary
-                          : AppColors.textMuted,
-                      fontSize: 12,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
+          ..._languageChips(),
         ],
       ),
     );
+  }
+
+  // ── Mobile: two rows ──
+  Widget _buildMobileBar() {
+    return Container(
+      color: AppColors.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Row 1: file name
+          _fileNameWidget(),
+          const SizedBox(height: 6),
+          // Row 2: language chips scrollable
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _languageChips(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _fileNameWidget() {
+    return GestureDetector(
+      onTap: _startEdit,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: _editingFileName
+              ? AppColors.green.withValues(alpha: 0.1)
+              : AppColors.card,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: _editingFileName
+                ? AppColors.green.withValues(alpha: 0.4)
+                : AppColors.border,
+          ),
+        ),
+        child: _editingFileName
+            ? SizedBox(
+          width: 110,
+          child: TextField(
+            controller: _fileController,
+            autofocus: true,
+            onSubmitted: (_) => _stopEdit(),
+            onTapOutside: (_) => _stopEdit(),
+            style: const TextStyle(
+              color: AppColors.green,
+              fontSize: 11,
+              fontFamily: 'monospace',
+            ),
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        )
+            : Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.insert_drive_file_rounded,
+              size: 11,
+              color: AppColors.green.withValues(alpha: 0.8),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _fileName,
+              style: const TextStyle(
+                color: AppColors.green,
+                fontSize: 11,
+                fontFamily: 'monospace',
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.edit_rounded,
+              size: 9,
+              color: AppColors.textMuted.withValues(alpha: 0.6),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _languageChips() {
+    return LanguageBar.languages.map((lang) {
+      final isSelected = widget.selected == lang;
+      return Padding(
+        padding: const EdgeInsets.only(right: 4),
+        child: GestureDetector(
+          onTap: () => widget.onChanged(lang),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.white.withValues(alpha: 0.12)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.white.withValues(alpha: 0.2)
+                    : Colors.transparent,
+              ),
+            ),
+            child: Text(
+              lang,
+              style: TextStyle(
+                color: isSelected
+                    ? AppColors.textPrimary
+                    : AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: isSelected
+                    ? FontWeight.w600
+                    : FontWeight.normal,
+              ),
+            ),
+          ),
+        ),
+      );
+    }).toList();
   }
 }

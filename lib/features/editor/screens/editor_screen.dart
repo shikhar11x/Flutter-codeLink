@@ -47,6 +47,7 @@ class _EditorScreenState extends State<EditorScreen> {
   String _fileName = 'Main.java';
   bool _isLocked = false;
   String _lockedBy = '';
+  bool _bottomPanelVisible = false;
   late CodeController _codeController;
   DateTime? _lastEmit;
 
@@ -269,20 +270,22 @@ class _EditorScreenState extends State<EditorScreen> {
         ),
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(7),
-                border: Border.all(color: AppColors.border),
+            if (!isMobile) ...[
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(7),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: const Icon(
+                  Icons.link_rounded,
+                  color: AppColors.white,
+                  size: 14,
+                ),
               ),
-              child: const Icon(
-                Icons.link_rounded,
-                color: AppColors.white,
-                size: 14,
-              ),
-            ),
-            const SizedBox(width: 10),
+              const SizedBox(width: 8),
+            ],
             Expanded(
               child: PadTitle(
                 padSlug: widget.padSlug,
@@ -302,46 +305,112 @@ class _EditorScreenState extends State<EditorScreen> {
                 boxShadow: [
                   BoxShadow(
                     color: (_isConnected
-                        ? const Color(0xFF00FF94)
-                        : Colors.orange)
+                            ? const Color(0xFF00FF94)
+                            : Colors.orange)
                         .withValues(alpha: 0.5),
                     blurRadius: 6,
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
           ],
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: AvatarGroup(collaborators: _collaborators, size: 28),
-          ),
-          const SizedBox(width: 6),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            child: PermissionBadge(role: _currentRole),
-          ),
-          const SizedBox(width: 2),
-          IconButton(
-            onPressed: _showShareDrawer,
-            icon: const Icon(
-              Icons.share_rounded,
-              size: 18,
-              color: AppColors.textSecondary,
+          // ── Desktop actions ──
+          if (!isMobile) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: AvatarGroup(collaborators: _collaborators, size: 28),
             ),
-          ),
-          IconButton(
-            onPressed: _showSettingsSheet,
-            icon: const Icon(
-              Icons.tune_rounded,
-              size: 18,
-              color: AppColors.textSecondary,
+            const SizedBox(width: 6),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              child: PermissionBadge(role: _currentRole),
             ),
-          ),
+            const SizedBox(width: 2),
+            IconButton(
+              onPressed: _showShareDrawer,
+              icon: const Icon(
+                Icons.share_rounded,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            IconButton(
+              onPressed: _showSettingsSheet,
+              icon: const Icon(
+                Icons.tune_rounded,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+
+          // ── Mobile: Permission badge + 3 dot menu ──
+          if (isMobile) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              child: PermissionBadge(role: _currentRole),
+            ),
+            PopupMenuButton(
+              icon: const Icon(
+                Icons.more_vert_rounded,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: AppColors.border),
+              ),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  onTap: _showShareDrawer,
+                  child: const Row(
+                    children: [
+                      Icon(Icons.share_rounded,
+                          size: 16, color: AppColors.textSecondary),
+                      SizedBox(width: 10),
+                      Text('Share',
+                          style: TextStyle(
+                              color: AppColors.textPrimary, fontSize: 13)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  onTap: _showSettingsSheet,
+                  child: const Row(
+                    children: [
+                      Icon(Icons.tune_rounded,
+                          size: 16, color: AppColors.textSecondary),
+                      SizedBox(width: 10),
+                      Text('Settings',
+                          style: TextStyle(
+                              color: AppColors.textPrimary, fontSize: 13)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  onTap: _openNewPad,
+                  child: const Row(
+                    children: [
+                      Icon(Icons.add_rounded,
+                          size: 16, color: AppColors.textSecondary),
+                      SizedBox(width: 10),
+                      Text('New Pad',
+                          style: TextStyle(
+                              color: AppColors.textPrimary, fontSize: 13)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // ── Run button — both ──
           Container(
-            margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+            margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
             decoration: BoxDecoration(
               color: _isRunning ? AppColors.surface : AppColors.whiteDim,
               borderRadius: BorderRadius.circular(8),
@@ -349,12 +418,12 @@ class _EditorScreenState extends State<EditorScreen> {
               boxShadow: _isRunning
                   ? null
                   : [
-                BoxShadow(
-                  color: AppColors.white.withValues(alpha: 0.12),
-                  blurRadius: 12,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+                      BoxShadow(
+                        color: AppColors.white.withValues(alpha: 0.12),
+                        blurRadius: 12,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
             child: Material(
               color: Colors.transparent,
@@ -363,7 +432,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 onTap: _runCode,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
+                    horizontal: 12,
                     vertical: 6,
                   ),
                   child: Row(
@@ -404,14 +473,14 @@ class _EditorScreenState extends State<EditorScreen> {
       ),
       body: _isLoading
           ? const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF00FF94),
-          strokeWidth: 2,
-        ),
-      )
+              child: CircularProgressIndicator(
+                color: Color(0xFF00FF94),
+                strokeWidth: 2,
+              ),
+            )
           : isMobile
-          ? _buildMobileLayout()
-          : _buildDesktopLayout(),
+              ? _buildMobileLayout()
+              : _buildDesktopLayout(),
     );
   }
 
@@ -479,54 +548,77 @@ class _EditorScreenState extends State<EditorScreen> {
 
         // Code editor
         Expanded(
-          flex: 3,
           child: CodeEditorWidget(
             controller: _codeController,
             readOnly: _isReadOnly,
             onChanged: _onCodeChanged,
             fontSize: _fontSize,
-            showLineNumbers: _showLineNumbers,
-            wordWrap: _wordWrap,
+            showLineNumbers: false,
+            wordWrap: true,
           ),
         ),
 
-        // Language bar
+        // Bottom panel — animated
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          height: _bottomPanelVisible ? 260 : 0,
+          child: _bottomPanelVisible
+              ? _MobilePanelTabs(
+                  collaborators: _collaborators,
+                  output: _output,
+                  isRunning: _isRunning,
+                  language: _selectedLanguage,
+                  isOwner: _currentRole == UserRole.owner,
+                  isReadOnly: _isReadOnly,
+                  isLocked: _isLocked,
+                  lockedBy: _lockedBy,
+                  onLockToggle: _currentRole == UserRole.owner
+                      ? _handleLockToggle
+                      : null,
+                  onNewPad: _openNewPad,
+                )
+              : const SizedBox.shrink(),
+        ),
+
+        // Language bar + toggle arrow
         Container(
           color: AppColors.surface,
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: LanguageBar(
-            selected: _selectedLanguage,
-            onChanged: _changeLanguage,
-            onFileNameChanged: (name) => setState(() => _fileName = name),
-          ),
-        ),
-
-        // Bottom panel
-        SizedBox(
-          height: 220,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              border: Border(
-                top: BorderSide(
-                  color: AppColors.white.withValues(alpha: 0.06),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Toggle arrow
+              GestureDetector(
+                onTap: () => setState(
+                  () => _bottomPanelVisible = !_bottomPanelVisible,
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: AppColors.white.withValues(alpha: 0.06),
+                      ),
+                    ),
+                  ),
+                  child: Icon(
+                    _bottomPanelVisible
+                        ? Icons.keyboard_arrow_down_rounded
+                        : Icons.keyboard_arrow_up_rounded,
+                    color: AppColors.textMuted,
+                    size: 20,
+                  ),
                 ),
               ),
-            ),
-            child: _MobilePanelTabs(
-              collaborators: _collaborators,
-              output: _output,
-              isRunning: _isRunning,
-              language: _selectedLanguage,
-              isOwner: _currentRole == UserRole.owner,
-              isReadOnly: _isReadOnly,
-              isLocked: _isLocked,
-              lockedBy: _lockedBy,
-              onLockToggle: _currentRole == UserRole.owner
-                  ? _handleLockToggle
-                  : null,
-              onNewPad: _openNewPad,
-            ),
+
+              // Language bar
+              LanguageBar(
+                selected: _selectedLanguage,
+                onChanged: _changeLanguage,
+                onFileNameChanged: (name) => setState(() => _fileName = name),
+              ),
+            ],
           ),
         ),
       ],
@@ -569,75 +661,82 @@ class _MobilePanelTabsState extends State<_MobilePanelTabs> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Tab bar
-        Row(
-          children: [
-            _TabBtn(
-              label: 'Output',
-              selected: _tab == 0,
-              onTap: () => setState(() => _tab = 0),
-              dot: widget.isRunning,
-              dotColor: AppColors.green,
-            ),
-            _TabBtn(
-              label: 'Collaborators',
-              selected: _tab == 1,
-              onTap: () => setState(() => _tab = 1),
-              dot: true,
-              dotColor: AppColors.green,
-            ),
-            const Spacer(),
-            GestureDetector(
-              onTap: widget.onNewPad,
-              child: Container(
-                margin: const EdgeInsets.only(right: 10),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.whiteDim,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.add_rounded, color: Colors.black, size: 12),
-                    SizedBox(width: 3),
-                    Text(
-                      'New Pad',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          top: BorderSide(color: AppColors.white.withValues(alpha: 0.06)),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Tab bar
+          Row(
+            children: [
+              _TabBtn(
+                label: 'Output',
+                selected: _tab == 0,
+                onTap: () => setState(() => _tab = 0),
+                dot: widget.isRunning,
+              ),
+              _TabBtn(
+                label: 'Collaborators',
+                selected: _tab == 1,
+                onTap: () => setState(() => _tab = 1),
+                dot: true,
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: widget.onNewPad,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.whiteDim,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.add_rounded, color: Colors.black, size: 12),
+                      SizedBox(width: 3),
+                      Text(
+                        'New Pad',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-
-        // Content
-        Expanded(
-          child: _tab == 0
-              ? _OutputTab(
-            output: widget.output,
-            isRunning: widget.isRunning,
-            language: widget.language,
-          )
-              : _CollabTab(
-            collaborators: widget.collaborators,
-            isOwner: widget.isOwner,
-            isReadOnly: widget.isReadOnly,
-            isLocked: widget.isLocked,
-            lockedBy: widget.lockedBy,
-            onLockToggle: widget.onLockToggle,
+            ],
           ),
-        ),
-      ],
+
+          Container(height: 1, color: AppColors.border),
+
+          // Content
+          Expanded(
+            child: _tab == 0
+                ? _OutputTab(
+                    output: widget.output,
+                    isRunning: widget.isRunning,
+                  )
+                : _CollabTab(
+                    collaborators: widget.collaborators,
+                    isOwner: widget.isOwner,
+                    isReadOnly: widget.isReadOnly,
+                    isLocked: widget.isLocked,
+                    lockedBy: widget.lockedBy,
+                    onLockToggle: widget.onLockToggle,
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -647,14 +746,12 @@ class _TabBtn extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
   final bool dot;
-  final Color dotColor;
 
   const _TabBtn({
     required this.label,
     required this.selected,
     required this.onTap,
     this.dot = false,
-    this.dotColor = AppColors.green,
   });
 
   @override
@@ -662,7 +759,7 @@ class _TabBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
@@ -678,20 +775,17 @@ class _TabBtn extends StatelessWidget {
                 width: 5,
                 height: 5,
                 margin: const EdgeInsets.only(right: 5),
-                decoration: BoxDecoration(
-                  color: dotColor,
+                decoration: const BoxDecoration(
+                  color: AppColors.green,
                   shape: BoxShape.circle,
                 ),
               ),
             Text(
               label,
               style: TextStyle(
-                color: selected
-                    ? AppColors.textPrimary
-                    : AppColors.textMuted,
-                fontSize: 11,
-                fontWeight:
-                selected ? FontWeight.w600 : FontWeight.normal,
+                color: selected ? AppColors.textPrimary : AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
           ],
@@ -704,37 +798,24 @@ class _TabBtn extends StatelessWidget {
 class _OutputTab extends StatelessWidget {
   final String output;
   final bool isRunning;
-  final String language;
 
   const _OutputTab({
     required this.output,
     required this.isRunning,
-    required this.language,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: output.isEmpty
-          ? Text(
-        isRunning
-            ? 'Running...'
-            : 'Run your code to see output here...',
-        style: const TextStyle(
-          color: AppColors.textMuted,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(14),
+      child: Text(
+        output.isEmpty
+            ? (isRunning ? 'Running...' : 'Run your code to see output here...')
+            : output,
+        style: TextStyle(
+          color: output.isEmpty ? AppColors.textMuted : AppColors.green,
           fontFamily: 'monospace',
-          fontSize: 12,
-        ),
-      )
-          : SingleChildScrollView(
-        child: Text(
-          output,
-          style: const TextStyle(
-            color: AppColors.green,
-            fontFamily: 'monospace',
-            fontSize: 12,
-          ),
+          fontSize: 13,
         ),
       ),
     );
@@ -761,18 +842,18 @@ class _CollabTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ...collaborators.map(
-                (c) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+            (c) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 children: [
                   Container(
-                    width: 22,
-                    height: 22,
+                    width: 26,
+                    height: 26,
                     decoration: BoxDecoration(
                       color: c.color,
                       shape: BoxShape.circle,
@@ -781,7 +862,7 @@ class _CollabTab extends StatelessWidget {
                       child: Text(
                         c.initials,
                         style: const TextStyle(
-                          fontSize: 8,
+                          fontSize: 9,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -793,7 +874,7 @@ class _CollabTab extends StatelessWidget {
                     c.name,
                     style: const TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 12,
+                      fontSize: 13,
                     ),
                   ),
                 ],
@@ -804,12 +885,12 @@ class _CollabTab extends StatelessWidget {
           if (isLocked && !isOwner)
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 6,
+                horizontal: 10,
+                vertical: 7,
               ),
               decoration: BoxDecoration(
                 color: Colors.orange.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: Colors.orange.withValues(alpha: 0.2),
                 ),
@@ -818,15 +899,15 @@ class _CollabTab extends StatelessWidget {
                 children: [
                   const Icon(
                     Icons.lock_rounded,
-                    size: 11,
+                    size: 13,
                     color: Colors.orange,
                   ),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 6),
                   Text(
                     'Locked by $lockedBy',
                     style: const TextStyle(
                       color: Colors.orange,
-                      fontSize: 10,
+                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -837,15 +918,16 @@ class _CollabTab extends StatelessWidget {
             GestureDetector(
               onTap: onLockToggle,
               child: Container(
+                margin: const EdgeInsets.only(top: 6),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
+                  horizontal: 12,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
                   color: isReadOnly
                       ? Colors.orange.withValues(alpha: 0.08)
                       : AppColors.card,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isReadOnly
                         ? Colors.orange.withValues(alpha: 0.3)
@@ -859,19 +941,17 @@ class _CollabTab extends StatelessWidget {
                       isReadOnly
                           ? Icons.lock_rounded
                           : Icons.lock_open_rounded,
-                      size: 11,
-                      color: isReadOnly
-                          ? Colors.orange
-                          : AppColors.textMuted,
+                      size: 13,
+                      color: isReadOnly ? Colors.orange : AppColors.textMuted,
                     ),
-                    const SizedBox(width: 5),
+                    const SizedBox(width: 6),
                     Text(
                       isReadOnly ? 'Locked' : 'Lock pad',
                       style: TextStyle(
                         color: isReadOnly
                             ? Colors.orange
                             : AppColors.textMuted,
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

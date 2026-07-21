@@ -1,7 +1,6 @@
 const express = require('express');
 const pool = require('../config/db');
 const { optionalAuth } = require('../middleware/auth');
-const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
 
@@ -15,8 +14,10 @@ router.post('/', optionalAuth, async (req, res) => {
 
   try {
     const existing = await pool.query(
-      'SELECT id FROM pads WHERE slug = $1', [slug]
+      'SELECT id FROM pads WHERE slug = $1',
+      [slug]
     );
+
     if (existing.rows.length > 0) {
       return res.status(409).json({ error: 'Slug already exists' });
     }
@@ -34,9 +35,13 @@ router.post('/', optionalAuth, async (req, res) => {
       ]
     );
 
-    res.status(201).json({ pad: result.rows[0] });
+    res.status(201).json({
+      pad: result.rows[0],
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
 
@@ -46,44 +51,59 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT * FROM pads WHERE slug = $1', [slug]
+      'SELECT * FROM pads WHERE slug = $1',
+      [slug]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Pad not found' });
+      return res.status(404).json({
+        error: 'Pad not found',
+      });
     }
 
-    res.json({ pad: result.rows[0] });
+    res.json({
+      pad: result.rows[0],
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
 
-// Update pad content
+// Update pad
 router.patch('/:slug', optionalAuth, async (req, res) => {
   const { slug } = req.params;
   const { content, language } = req.body;
 
   try {
     const result = await pool.query(
-      `UPDATE pads SET
-        content = COALESCE($1, content),
-        language = COALESCE($2, language),
-        updated_at = NOW()
+      `UPDATE pads
+       SET
+         content = COALESCE($1, content),
+         language = COALESCE($2, language),
+         updated_at = NOW()
        WHERE slug = $3
        RETURNING *`,
       [content, language, slug]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Pad not found' });
+      return res.status(404).json({
+        error: 'Pad not found',
+      });
     }
 
-    res.json({ pad: result.rows[0] });
+    res.json({
+      pad: result.rows[0],
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
+
 // Delete pad
 router.delete('/:slug', optionalAuth, async (req, res) => {
   const { slug } = req.params;
@@ -95,17 +115,19 @@ router.delete('/:slug', optionalAuth, async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Pad not found' });
+      return res.status(404).json({
+        error: 'Pad not found',
+      });
     }
 
-    res.json({ success: true });
+    res.json({
+      success: true,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
 
-// Lock/unlock pad
-socket.on('pad_lock', ({ slug, locked, lockedBy }) => {
-  socket.to(slug).emit('pad_locked', { locked, lockedBy });
-});
 module.exports = router;

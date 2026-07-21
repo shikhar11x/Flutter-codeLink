@@ -6,7 +6,6 @@ import 'package:highlight/languages/cpp.dart';
 import 'package:highlight/languages/java.dart';
 import 'package:highlight/languages/dart.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/network/socket_service.dart';
 import '../../../core/services/pad_service.dart';
 import '../../../core/services/execution_service.dart';
@@ -165,11 +164,11 @@ class _EditorScreenState extends State<EditorScreen> {
       _codeController = CodeController(
         text: _codeController.text,
         language: switch (lang) {
-          'Java'       => java,
-          'Python'     => python,
+          'Java' => java,
+          'Python' => python,
           'JavaScript' => javascript,
-          'C++'        => cpp,
-          _            => dart,
+          'C++' => cpp,
+          _ => dart,
         },
       );
     });
@@ -298,16 +297,13 @@ class _EditorScreenState extends State<EditorScreen> {
               width: 7,
               height: 7,
               decoration: BoxDecoration(
-                color: _isConnected
-                    ? const Color(0xFF00FF94)
-                    : Colors.orange,
+                color: _isConnected ? const Color(0xFF00FF94) : Colors.orange,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: (_isConnected
-                            ? const Color(0xFF00FF94)
-                            : Colors.orange)
-                        .withValues(alpha: 0.5),
+                    color:
+                        (_isConnected ? const Color(0xFF00FF94) : Colors.orange)
+                            .withValues(alpha: 0.5),
                     blurRadius: 6,
                   ),
                 ],
@@ -369,12 +365,19 @@ class _EditorScreenState extends State<EditorScreen> {
                   onTap: _showShareDrawer,
                   child: const Row(
                     children: [
-                      Icon(Icons.share_rounded,
-                          size: 16, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.share_rounded,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
                       SizedBox(width: 10),
-                      Text('Share',
-                          style: TextStyle(
-                              color: AppColors.textPrimary, fontSize: 13)),
+                      Text(
+                        'Share',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -382,12 +385,19 @@ class _EditorScreenState extends State<EditorScreen> {
                   onTap: _showSettingsSheet,
                   child: const Row(
                     children: [
-                      Icon(Icons.tune_rounded,
-                          size: 16, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.tune_rounded,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
                       SizedBox(width: 10),
-                      Text('Settings',
-                          style: TextStyle(
-                              color: AppColors.textPrimary, fontSize: 13)),
+                      Text(
+                        'Settings',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -395,12 +405,19 @@ class _EditorScreenState extends State<EditorScreen> {
                   onTap: _openNewPad,
                   child: const Row(
                     children: [
-                      Icon(Icons.add_rounded,
-                          size: 16, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.add_rounded,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
                       SizedBox(width: 10),
-                      Text('New Pad',
-                          style: TextStyle(
-                              color: AppColors.textPrimary, fontSize: 13)),
+                      Text(
+                        'New Pad',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -479,8 +496,8 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
             )
           : isMobile
-              ? _buildMobileLayout()
-              : _buildDesktopLayout(),
+          ? _buildMobileLayout()
+          : _buildDesktopLayout(),
     );
   }
 
@@ -589,9 +606,8 @@ class _EditorScreenState extends State<EditorScreen> {
             children: [
               // Toggle arrow
               GestureDetector(
-                onTap: () => setState(
-                  () => _bottomPanelVisible = !_bottomPanelVisible,
-                ),
+                onTap: () =>
+                    setState(() => _bottomPanelVisible = !_bottomPanelVisible),
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -722,10 +738,7 @@ class _MobilePanelTabsState extends State<_MobilePanelTabs> {
           // Content
           Expanded(
             child: _tab == 0
-                ? _OutputTab(
-                    output: widget.output,
-                    isRunning: widget.isRunning,
-                  )
+                ? _OutputTab(output: widget.output, isRunning: widget.isRunning)
                 : _CollabTab(
                     collaborators: widget.collaborators,
                     isOwner: widget.isOwner,
@@ -799,10 +812,7 @@ class _OutputTab extends StatelessWidget {
   final String output;
   final bool isRunning;
 
-  const _OutputTab({
-    required this.output,
-    required this.isRunning,
-  });
+  const _OutputTab({required this.output, required this.isRunning});
 
   @override
   Widget build(BuildContext context) {
@@ -884,16 +894,11 @@ class _CollabTab extends StatelessWidget {
 
           if (isLocked && !isOwner)
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 7,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
               decoration: BoxDecoration(
                 color: Colors.orange.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.orange.withValues(alpha: 0.2),
-                ),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -905,10 +910,7 @@ class _CollabTab extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     'Locked by $lockedBy',
-                    style: const TextStyle(
-                      color: Colors.orange,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.orange, fontSize: 12),
                   ),
                 ],
               ),
@@ -938,9 +940,7 @@ class _CollabTab extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      isReadOnly
-                          ? Icons.lock_rounded
-                          : Icons.lock_open_rounded,
+                      isReadOnly ? Icons.lock_rounded : Icons.lock_open_rounded,
                       size: 13,
                       color: isReadOnly ? Colors.orange : AppColors.textMuted,
                     ),
@@ -948,9 +948,7 @@ class _CollabTab extends StatelessWidget {
                     Text(
                       isReadOnly ? 'Locked' : 'Lock pad',
                       style: TextStyle(
-                        color: isReadOnly
-                            ? Colors.orange
-                            : AppColors.textMuted,
+                        color: isReadOnly ? Colors.orange : AppColors.textMuted,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),

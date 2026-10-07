@@ -1,5 +1,4 @@
-# 🚀 CodeLink
-
+<img src="codelink-banner.gif" width="100%">
 A real-time collaborative code editor built with Flutter Web. Create a coding session, share the link, and code together instantly.
 
 🌐 **Live Demo:** https://codelink-11x.vercel.app
